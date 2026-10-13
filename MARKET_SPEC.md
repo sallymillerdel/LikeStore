@@ -45,8 +45,7 @@ MyMarket/
 │   └── catalog.json.sig      Ed25519 signature of catalog.json
 ├── scripts/
 │   └── publish.py            parse, hash, sign, upload, update catalog
-├── market-android/           Android client
-├── market-pc/                Windows client
+├── market/                   Flutter client: Android + Windows from one codebase
 └── .github/workflows/        deploys catalog/ to GitHub Pages
 ```
 
@@ -354,6 +353,26 @@ A workflow deploys the contents of `catalog/` (plus `icons/`) to GitHub Pages on
 - Whether to code-sign Windows executables.
 - Whether the Windows client should create Desktop/Start Menu shortcuts by default.
 - Final repository name and the market's own app id.
+
+---
+
+### Decisions taken (October 2026)
+
+- **Stack:** Flutter for both clients, one project in `market/` (shared UI, catalog,
+  signature and download logic; Kotlin only for the Android installer and WorkManager).
+- **Store identity:** name "LikeStore", app id `com.likestore.market` (Android package
+  and catalog id), Windows exe `LikeStore.exe`, local folder `%LocalAppData%\LikeStore`.
+- **Hosting:** repo `sallymillerdel/LikeStore`, catalog base URL in `market.json`.
+- **Windows self-update:** no Velopack. Every version unpacks into its own folder, so the
+  store starts the new exe with `--finish-update <pid>`. The new exe waits for the old
+  process to exit and removes the old folder.
+- **Code signing (Windows):** not for now (SmartScreen may warn on first run).
+- **Shortcuts:** Start Menu on by default, Desktop off; both can be changed in Settings.
+- **Android package visibility:** a `<queries>` launcher-intent filter makes all launchable
+  apps visible, so new apps work without rebuilding the store or using `QUERY_ALL_PACKAGES`.
+- **Icons:** served from `catalog/icons/<app-id>.png` (deployed with the catalog).
+- **Signature file:** `catalog.json.sig` is the base64 of the raw 64-byte Ed25519 signature
+  over the exact bytes of `catalog.json`. The public key is the base64 of the raw 32 bytes.
 
 ---
 

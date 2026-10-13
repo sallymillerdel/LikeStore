@@ -1,0 +1,18 @@
+# Binaries never go into git (they live in GitHub Releases).
+incoming/*
+!incoming/.gitkeep
+archive/*
+!archive/.gitkeep
+*.apk
+*.aab
+
+# Secrets (should live outside the repo anyway).
+*.pem
+*.jks
+*.keystore
+key.properties
+
+__pycache__/
+.venv/
+.idea/
+.vscode/

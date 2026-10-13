@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# catalog.json is signed byte-for-byte: never let git rewrite its line endings.
+catalog/** -text
