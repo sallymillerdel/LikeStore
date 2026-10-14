@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:window_manager/window_manager.dart';
 
 import '../config.g.dart';
 import '../store_controller.dart';
@@ -112,20 +111,18 @@ class _HomePageState extends State<HomePage> {
     final labels = width >= (frame ? 960 : 700);
     void settings() => showSettingsSheet(context, c);
 
-    final bar = Container(
-      decoration: BoxDecoration(
-        color: x.card.withValues(alpha: 0.7),
-        border: Border(bottom: BorderSide(color: x.cardBorder)),
-      ),
-      padding: EdgeInsets.fromLTRB(24, frame ? 10 : 12, frame ? 10 : 24, frame ? 10 : 12),
-      child: Row(
-        children: [
-          ClipRRect(
+    final row = Row(
+      children: [
+        // Not clickable, so the window drags from them too.
+        IgnorePointer(
+          child: ClipRRect(
             borderRadius: BorderRadius.circular(9),
             child: Image.asset('assets/logo.png', width: 36, height: 36, filterQuality: FilterQuality.medium),
           ),
-          const SizedBox(width: 12),
-          Expanded(
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: IgnorePointer(
             child: Text(
               kStoreName,
               maxLines: 1,
@@ -133,39 +130,56 @@ class _HomePageState extends State<HomePage> {
               style: Theme.of(context).textTheme.titleLarge,
             ),
           ),
-          if (labels)
-            OutlinedButton.icon(
-              onPressed: c.loading ? null : c.refresh,
-              icon: _refreshIcon(),
-              label: const Text('Check for updates'),
-            )
-          else
-            IconButton(tooltip: 'Check for updates', onPressed: c.loading ? null : c.refresh, icon: _refreshIcon()),
-          if (pending > 0) ...[
-            const SizedBox(width: 10),
-            FilledButton.icon(
-              onPressed: c.updateAll,
-              icon: const Icon(Icons.download),
-              label: Text(labels ? 'Update all ($pending)' : '$pending'),
-            ),
-          ],
+        ),
+        if (labels)
+          OutlinedButton.icon(
+            onPressed: c.loading ? null : c.refresh,
+            icon: _refreshIcon(),
+            label: const Text('Check for updates'),
+          )
+        else
+          IconButton(tooltip: 'Check for updates', onPressed: c.loading ? null : c.refresh, icon: _refreshIcon()),
+        if (pending > 0) ...[
           const SizedBox(width: 10),
-          if (labels)
-            OutlinedButton.icon(
-              onPressed: settings,
-              icon: const Icon(Icons.settings_outlined),
-              label: const Text('Settings'),
-            )
-          else
-            IconButton(tooltip: 'Settings', onPressed: settings, icon: const Icon(Icons.settings_outlined)),
-          if (frame) ...[
-            Container(width: 1, height: 28, margin: const EdgeInsets.symmetric(horizontal: 14), color: x.cardBorder),
-            const WindowButtons(),
-          ],
+          FilledButton.icon(
+            onPressed: c.updateAll,
+            icon: const Icon(Icons.download),
+            label: Text(labels ? 'Update all ($pending)' : '$pending'),
+          ),
         ],
-      ),
+        const SizedBox(width: 10),
+        if (labels)
+          OutlinedButton.icon(
+            onPressed: settings,
+            icon: const Icon(Icons.settings_outlined),
+            label: const Text('Settings'),
+          )
+        else
+          IconButton(tooltip: 'Settings', onPressed: settings, icon: const Icon(Icons.settings_outlined)),
+        if (frame) ...[
+          IgnorePointer(
+            child: Container(
+              width: 1,
+              height: 28,
+              margin: const EdgeInsets.symmetric(horizontal: 14),
+              color: x.cardBorder,
+            ),
+          ),
+          const WindowButtons(),
+        ],
+      ],
     );
-    return frame ? DragToMoveArea(child: bar) : bar;
+    final padded = Padding(
+      padding: EdgeInsets.fromLTRB(24, frame ? 10 : 12, frame ? 10 : 24, frame ? 10 : 12),
+      child: row,
+    );
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: x.card.withValues(alpha: 0.7),
+        border: Border(bottom: BorderSide(color: x.cardBorder)),
+      ),
+      child: frame ? WindowDragArea(child: padded) : padded,
+    );
   }
 
   Widget _body(BuildContext context, double width, double pad, bool wide) {

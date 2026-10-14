@@ -18,6 +18,38 @@ Future<void> initWindowFrame() async {
   );
 }
 
+Future<void> _toggleMaximize() async =>
+    await windowManager.isMaximized() ? windowManager.unmaximize() : windowManager.maximize();
+
+/// Drag to move the window, double-click to maximize / restore.
+///
+/// Unlike window_manager's DragToMoveArea, which wraps its child, this sits
+/// behind it and only gets clicks that hit nothing in [child]. A double-click
+/// recognizer above the buttons would hold every click on them until the
+/// double-click timeout (300 ms). Wrap decorative widgets of [child] (text,
+/// images) in IgnorePointer so they drag too.
+class WindowDragArea extends StatelessWidget {
+  const WindowDragArea({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onPanStart: (_) => windowManager.startDragging(),
+            onDoubleTap: _toggleMaximize,
+          ),
+        ),
+        child,
+      ],
+    );
+  }
+}
+
 /// Minimize, maximize / restore and close, in the style of the top bar.
 class WindowButtons extends StatefulWidget {
   const WindowButtons({super.key});
