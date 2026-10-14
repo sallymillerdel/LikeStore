@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-14T17:58:12Z",
+  "generatedAt": "2026-10-14T17:58:27Z",
   "apps": [
     {
       "id": "com.likestore.market",
@@ -61,6 +61,26 @@
           "sizeBytes": 44910942,
           "changelog": "First release",
           "releasedAt": "2026-10-14T17:58:12Z"
+        }
+      }
+    },
+    {
+      "id": "com.whylist.app",
+      "name": "Whylist",
+      "description": "",
+      "packages": {
+        "android": {
+          "package": "apk",
+          "packageName": "com.whylist.whylist",
+          "versionCode": 1,
+          "versionName": "1.0.0",
+          "minSdk": 26,
+          "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.whylist.app-android-1.0.0/com.whylist.whylist-android-1.0.0.apk",
+          "sha256": "8907a4ca46723836c8fb809237cf67262cc541e1509fe07b1523ba78d6a7c6f6",
+          "sizeBytes": 140931435,
+          "changelog": "First release. Checks your chosen sites every second over mobile data, even when Wi-Fi or a VPN is on. You can switch the checks to Wi-Fi, run them through or around a VPN, and add, rename or remove up to 20 sites.",
+          "releasedAt": "2026-10-14T17:58:27Z"
         }
       }
     }
