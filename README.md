@@ -9,6 +9,7 @@ A private app store for my own Android and Windows apps (spec: [MARKET_SPEC.md](
 | Catalog (signed, served by GitHub Pages) | [`catalog/`](catalog) |
 | Pages deploy | [`.github/workflows/pages.yml`](.github/workflows/pages.yml) |
 | Rules for Claude Code | [`CLAUDE.md`](CLAUDE.md) |
+| Detailed setup guide | [`SETUP.md`](SETUP.md) |
 
 The store reads `https://sallymillerdel.github.io/LikeStore/catalog.json`, checks its
 Ed25519 signature, and downloads files from this repo's GitHub Releases. Publishing a
