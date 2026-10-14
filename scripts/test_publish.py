@@ -149,6 +149,46 @@ class ValidateTest(unittest.TestCase):
         self.assertEqual(it.app_id, "com.x.notes")
 
 
+class EditIconTest(unittest.TestCase):
+    cfg = {"catalogBaseUrl": "https://o.github.io/r/"}
+
+    def setUp(self):
+        self.dir = Path(tempfile.mkdtemp())
+        self.icons = self.dir / "icons"
+        self.png = self.dir / "icon.png"
+        self.png.write_bytes(b"\x89PNG fake")
+        self.catalog = {"apps": [{"id": "com.x.notes", "name": "Notes", "packages": {}}]}
+
+    def run_edit(self, **kw):
+        a = argparse.Namespace(id="com.x.notes", name=None, description=None,
+                               icon=str(self.png), dry_run=False, yes=False, no_push=False)
+        vars(a).update(kw)
+        with mock.patch.multiple(publish, ICONS_DIR=self.icons,
+                                 load_config=mock.Mock(return_value=self.cfg),
+                                 load_private_key=mock.DEFAULT, check_key_matches_config=mock.DEFAULT,
+                                 check_git_ready=mock.DEFAULT,
+                                 load_catalog=mock.Mock(return_value=self.catalog),
+                                 write_signed_catalog=mock.DEFAULT,
+                                 commit_and_push=mock.DEFAULT) as m:
+            publish.cmd_edit(a)
+        return m
+
+    def test_dry_run_writes_nothing(self):
+        m = self.run_edit(dry_run=True)
+        self.assertFalse(self.icons.exists())
+        m["write_signed_catalog"].assert_not_called()
+        m["commit_and_push"].assert_not_called()
+
+    def test_yes_copies_icon_with_matching_url(self):
+        m = self.run_edit(yes=True)
+        dst = self.icons / "com.x.notes.png"
+        self.assertEqual(dst.read_bytes(), self.png.read_bytes())
+        digest = publish.sha256_file(dst)[:12]
+        self.assertEqual(self.catalog["apps"][0]["icon"],
+                         f"https://o.github.io/r/icons/com.x.notes.png?v={digest}")
+        m["commit_and_push"].assert_called_once()
+
+
 class SigningTest(unittest.TestCase):
     def test_roundtrip_and_tamper(self):
         from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey

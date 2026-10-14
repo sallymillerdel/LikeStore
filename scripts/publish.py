@@ -623,19 +623,21 @@ def cmd_edit(args) -> None:
         app["name"] = args.name
     if args.description is not None:
         app["description"] = args.description
+    icon_src = None
     if args.icon:
-        src = Path(args.icon)
-        if src.suffix.lower() != ".png" or not src.is_file():
+        icon_src = Path(args.icon)
+        if icon_src.suffix.lower() != ".png" or not icon_src.is_file():
             raise Stop("--icon must be an existing .png file.")
-        ICONS_DIR.mkdir(parents=True, exist_ok=True)
-        dst = ICONS_DIR / f"{app['id']}.png"
-        shutil.copyfile(src, dst)
-        app["icon"] = icon_url(cfg, app["id"], sha256_file(dst))
+        # The copy has the same bytes, so hash the source; copy only after confirmation.
+        app["icon"] = icon_url(cfg, app["id"], sha256_file(icon_src))
     print(json.dumps({k: v for k, v in app.items() if k != "packages"}, indent=2))
     if args.dry_run:
         print("Dry run: nothing was changed.")
         return
     confirm("Save, sign, commit and push?", args.yes)
+    if icon_src:
+        ICONS_DIR.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(icon_src, ICONS_DIR / f"{app['id']}.png")
     catalog["generatedAt"] = now_iso(catalog.get("generatedAt"))
     write_signed_catalog(catalog, key)
     commit_and_push(f"Edit {app['id']}", args.no_push)
