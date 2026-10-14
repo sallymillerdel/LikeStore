@@ -218,18 +218,20 @@ class _HomePageState extends State<HomePage> {
 
     final columns = (width / 460).floor().clamp(1, 3);
     final pending = _pending;
+    // The store's own card leads its section.
+    final ordered = [...c.apps.where((a) => a.isStore), ...c.apps.where((a) => !a.isStore)];
     final sections = [
       (
         'Updates',
         [
-          for (final a in c.apps)
+          for (final a in ordered)
             if (a.hasUpdate) a,
         ],
       ),
       (
         'Installed',
         [
-          for (final a in c.apps)
+          for (final a in ordered)
             if (a.installed != null && !a.hasUpdate) a,
         ],
       ),
