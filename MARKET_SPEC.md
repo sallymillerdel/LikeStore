@@ -271,10 +271,13 @@ Claude Code runs this script when I say things like "Update Notes, I dropped the
 
 ### What it does
 
-1. Scan `incoming/`. Identify each file:
+1. Scan `incoming/` and its app folders (`incoming/<App>/`, one per app). Identify each file:
    - `.apk`: read package name, `versionCode`, `versionName`, `minSdk` and the signing certificate SHA-256 (via `aapt2`, `apkanalyzer`, `apksigner`, or a Python APK parser).
    - `.zip` with a sibling `.json`: read id, name, entry, version from the metadata file; verify the zip hash matches.
    - Anything else or anything ambiguous: stop and ask me.
+
+   Per app and platform, take the newest build. Skip builds that are older than the
+   published version or identical to it, so old files can stay in a folder.
 2. Compute SHA-256 and size.
 3. Validate (see rules below). Abort on any failure.
 4. Show me a short summary (app, platform, old version → new version, files) and **ask for confirmation** before uploading anything.

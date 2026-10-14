@@ -4,12 +4,18 @@ This repository is a private app store for my own Android and Windows apps.
 The catalog format and publishing rules are in `MARKET_SPEC.md`; setup and the
 day-to-day workflow are in `README.md`.
 
-## Publishing ("Update Notes, I dropped the files")
+## Publishing ("Update the apps", "Update Classly, I dropped the files")
 
 1. Always use `scripts/publish.py`. Never hand-edit `catalog/catalog.json` or
    `catalog.json.sig`, and never upload releases with `gh` directly.
-2. Files to publish are in `incoming/`: an `.apk`, and/or a `.zip` with its
-   `.json` metadata, optionally `<app-id>.png` as the icon.
+2. Files to publish are in one folder per app under `incoming/` (`incoming/Classly/`,
+   `incoming/Luma/`, `incoming/Whylist/`, `incoming/XReel/`), or loose in
+   `incoming/` itself: an `.apk`, and/or a `.zip` with its `.json` metadata,
+   optionally `icon.png` (in an app folder) or `<app-id>.png` as the icon.
+   The script scans all of them, takes the newest build per app and platform,
+   and skips builds that are already published or older. "Update the apps"
+   means: run the dry run over everything. For one app only, add
+   `--folder <Folder>`.
 3. First run the dry run and show me its summary:
    `py scripts/publish.py publish --dry-run [--changelog "..."]`
 4. **Ask me for confirmation before uploading, committing or pushing.** Only

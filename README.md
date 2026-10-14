@@ -102,14 +102,22 @@ py scripts/publish.py publish
 
 1. Build the app. For Windows, use its portable build: `<id>-win-<version>.zip` and `.json`.
    For Android, bump `versionCode` and build a release-signed APK.
-2. Copy the files into `incoming/`. Optionally add `<app-id>.png` as the icon.
-3. Tell Claude Code: *"Update Classly, I dropped the files."* Claude runs the dry run, shows
-   you the plan, and publishes once you confirm. To do it by hand:
+2. Copy the files into the app's folder: `incoming/Classly/`, `incoming/Luma/`,
+   `incoming/Whylist/` or `incoming/XReel/` (a new app just needs a new folder). The
+   Windows `.zip` needs its `.json` next to it. Optionally add `icon.png` as the icon.
+3. Tell Claude Code: *"Update the apps."* The script checks every folder, takes the newest
+   build of each app and platform, and skips what's already published or older, so you can
+   leave old files in a folder. Claude runs the dry run, shows you the plan, and publishes
+   once you confirm. Published files move to `archive/<app-id>/<version>/`. To do it by hand:
 
    ```powershell
    py scripts/publish.py publish --dry-run --changelog "Bug fixes"
    py scripts/publish.py publish --changelog "Bug fixes"
+   py scripts/publish.py publish --dry-run --folder Classly   # just one app
    ```
+
+   `--changelog` applies to every build in the run, so use `--folder` when the apps need
+   different changelogs. The `changelog` field in a zip's `.json` is used otherwise.
 
 4. Devices see the update within about 10 minutes (Pages CDN cache). Press **Update**.
 
@@ -124,7 +132,10 @@ py scripts/publish.py verify [--app <id>] [--quick] live catalog signature + eve
 
 `publish.py` refuses to publish (and changes nothing) if:
 
-* the version is not higher than the published one
+* the version is not higher than the published one (older and already-published builds are
+  just skipped)
+* a build has the published version but different bytes (you forgot to bump the version)
+* two different builds of one app have the same version
 * the APK's signing certificate differs from the published one
 * the zip hash doesn't match its `.json`, or the entry exe is missing from the zip
 * the release tag already exists
@@ -134,7 +145,7 @@ py scripts/publish.py verify [--app <id>] [--quick] live catalog signature + eve
 
 * **XReel:** the Windows build calls the app `xreel`, but the APK is `com.slx.xreel`. The
   publisher will stop and ask. Either change the id in XReel's portable build to
-  `com.slx.xreel`, or publish the zip once with `--app-id com.slx.xreel`. After that, the
+  `com.slx.xreel`, or publish the zip once with `--folder XReel --app-id com.slx.xreel`. After that, the
   catalog remembers the mapping.
 * **Whylist** and **XReel** don't have a portable-ZIP build script yet (Classly and Luma do).
 * Android apps must keep using the same keystore forever (see step 3).

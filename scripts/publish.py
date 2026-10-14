@@ -2,7 +2,7 @@
 """LikeStore publisher: the only supported way to change the catalog.
 
     py scripts/publish.py publish --dry-run       show what would be published
-    py scripts/publish.py publish --yes           publish what is in incoming/
+    py scripts/publish.py publish --yes           publish what is new in incoming/ and its app folders
     py scripts/publish.py list                    show the catalog
     py scripts/publish.py edit ID [--name N] [--description D] [--icon PNG]
     py scripts/publish.py remove ID [android|windows] [--yes]
@@ -259,15 +259,42 @@ class Item:
     notes: list[str] = field(default_factory=list)
 
 
-def scan_incoming() -> tuple[list[Item], dict[str, Path]]:
+IGNORED_FILES = {"desktop.ini", "thumbs.db"}
+
+
+def rel(p: Path) -> str:
+    """A path as shown to the user: relative to incoming/ (e.g. Classly/x.apk)."""
+    try:
+        return p.relative_to(INCOMING).as_posix()
+    except ValueError:
+        return p.name
+
+
+def incoming_files(folder: str | None = None) -> list[Path]:
+    """Files in incoming/ itself and in its app folders (one level, e.g. incoming/Classly/)."""
     if not INCOMING.is_dir():
         raise Stop("incoming/ does not exist.")
-    files = sorted(p for p in INCOMING.iterdir() if p.is_file() and p.name != ".gitkeep")
+    if folder:
+        if not (INCOMING / folder).is_dir():
+            raise Stop(f"incoming/{folder}/ does not exist.")
+        dirs = [INCOMING / folder]
+    else:
+        dirs = [INCOMING] + sorted(
+            d for d in INCOMING.iterdir() if d.is_dir() and not d.name.startswith("."))
+    return [
+        p for d in dirs for p in sorted(d.iterdir())
+        if p.is_file() and not p.name.startswith(".") and p.name.lower() not in IGNORED_FILES
+    ]
+
+
+def scan_incoming(folder: str | None = None) -> tuple[list[Item], list[Path]]:
+    files = incoming_files(folder)
     if not files:
-        raise Stop("incoming/ is empty. Drop the .apk, or the .zip with its .json, there first.")
+        raise Stop("incoming/ and its app folders are empty. Drop the .apk, or the .zip with "
+                   "its .json, into the app's folder first.")
 
     items: list[Item] = []
-    icons: dict[str, Path] = {}
+    icons: list[Path] = []
     used: set[Path] = set()
 
     for p in files:
@@ -297,22 +324,81 @@ def scan_incoming() -> tuple[list[Item], dict[str, Path]]:
         elif ext == ".zip":
             meta_path = p.with_suffix(".json")
             if not meta_path.exists():
-                raise Stop(f"{p.name}: no metadata file {meta_path.name} next to it.")
+                raise Stop(f"{rel(p)}: no metadata file {meta_path.name} next to it.")
             items.append(windows_item(p, meta_path))
             used.update({p, meta_path})
         elif ext == ".png":
-            icons[p.stem] = p
+            icons.append(p)
             used.add(p)
 
-    leftovers = [p.name for p in files if p not in used]
+    leftovers = [rel(p) for p in files if p not in used]
     if leftovers:
         raise Stop(
             "Don't know what to do with: " + ", ".join(leftovers)
-            + ". Expected .apk, .zip + .json, or <app-id>.png. Remove them or ask."
+            + ". Expected .apk, .zip + .json, icon.png or <app-id>.png. Remove them or ask."
         )
-    if not items and icons:
-        raise Stop("Only icons in incoming/. Use `publish.py edit <id> --icon <file>` for that.")
     return items, icons
+
+
+def build_key(it: Item):
+    return it.version_code if it.platform == "android" else semver_key(it.version_name)
+
+
+def select_new(items: list[Item], catalog: dict) -> tuple[list[Item], list[tuple[Item, str]]]:
+    """Per app and platform, keep the newest build if it is not published yet.
+
+    Older builds and builds identical to the published one are set aside, so
+    app folders may keep old files. A build with the published version but
+    different bytes is kept, and validate() stops on it (forgot to bump).
+    """
+    groups: dict[tuple[str, str], list[Item]] = {}
+    for it in items:
+        groups.setdefault((it.app_id, it.platform), []).append(it)
+
+    new: list[Item] = []
+    skipped: list[tuple[Item, str]] = []
+    for (app_id, plat), group in groups.items():
+        group.sort(key=build_key, reverse=True)
+        top = group[0]
+        cur = ((find_app(catalog, app_id) or {}).get("packages", {})).get(plat)
+        if cur:
+            cur_key = int(cur["versionCode"]) if plat == "android" else semver_key(cur["versionName"])
+            if build_key(top) < cur_key or (build_key(top) == cur_key and top.sha256 == cur.get("sha256")):
+                for it in group:
+                    same = build_key(it) == cur_key and it.sha256 == cur.get("sha256")
+                    skipped.append((it, "already published" if same
+                                    else f"older than the published {cur['versionName']}"))
+                continue
+        for it in group[1:]:
+            if build_key(it) == build_key(top) and it.sha256 != top.sha256:
+                raise Stop(f"{rel(top.upload)} and {rel(it.upload)} are different {plat} builds of "
+                           f"{app_id} with the same version. Remove one.")
+            skipped.append((it, "same file as " + rel(top.upload) if it.sha256 == top.sha256
+                            else f"older than {rel(top.upload)}"))
+        new.append(top)
+    return new, skipped
+
+
+def resolve_icons(icon_files: list[Path], items: list[Item]) -> tuple[dict[str, Path], list[str]]:
+    """<app-id>.png anywhere, or icon.png inside an app folder (the app its builds belong to)."""
+    icons: dict[str, Path] = {}
+    notes: list[str] = []
+    for p in icon_files:
+        if p.stem.lower() == "icon" and p.parent != INCOMING:
+            ids = {i.app_id for i in items if i.upload.parent == p.parent}
+            if not ids:
+                notes.append(f"{rel(p)}: ignored, no build next to it")
+                continue
+            if len(ids) > 1:
+                raise Stop(f"{rel(p)}: the folder holds builds of several apps ({', '.join(sorted(ids))}). "
+                           "Name the icon <app-id>.png.")
+            app_id = ids.pop()
+        else:
+            app_id = p.stem
+        if app_id in icons:
+            raise Stop(f"Two icons for {app_id}: {rel(icons[app_id])} and {rel(p)}. Remove one.")
+        icons[app_id] = p
+    return icons, notes
 
 
 def windows_item(zip_path: Path, meta_path: Path) -> Item:
@@ -354,7 +440,8 @@ def windows_item(zip_path: Path, meta_path: Path) -> Item:
 def resolve_ids(items: list[Item], catalog: dict, forced_id: str | None) -> None:
     """Decide which catalog entry each item belongs to (see CLAUDE.md: ask when ambiguous)."""
     if forced_id and len({i.source_id for i in items}) > 1:
-        raise Stop("--app-id applies to one app at a time, but incoming/ holds several apps.")
+        raise Stop("--app-id applies to one app at a time, but incoming/ holds several apps. "
+                   "Add --folder <AppFolder> to publish just that folder.")
 
     for it in items:
         if forced_id:
@@ -481,12 +568,30 @@ def cmd_publish(args) -> None:
     catalog = load_catalog()
     check_git_ready()
 
-    items, icons = scan_incoming()
-    resolve_ids(items, catalog, args.app_id)
-    validate(items, catalog, cfg, args)
-    for app_id in icons:
+    found, icon_files = scan_incoming(args.folder)
+    resolve_ids(found, catalog, args.app_id)
+    items, skipped = select_new(found, catalog)
+    icons, icon_notes = resolve_icons(icon_files, found)
+    for app_id, p in list(icons.items()):
         if app_id not in {i.app_id for i in items}:
-            raise Stop(f"Icon {app_id}.png does not belong to any app being published.")
+            icon_notes.append(f"{rel(p)}: ignored, no new build of {app_id} "
+                              f"(use `publish.py edit {app_id} --icon ...` to change only the icon)")
+            del icons[app_id]
+
+    def print_skipped():
+        if skipped or icon_notes:
+            print("\nSkipped")
+            print("-------")
+        for it, why in skipped:
+            print(f"  {rel(it.upload)}: {why}")
+        for n in icon_notes:
+            print(f"  {n}")
+
+    if not items:
+        print_skipped()
+        print("\nNothing new to publish.")
+        return
+    validate(items, catalog, cfg, args)
 
     print("Publish plan")
     print("============")
@@ -496,7 +601,7 @@ def cmd_publish(args) -> None:
         print(f"\n{name}  [{it.app_id}]  {it.platform}" + ("  (NEW APP)" if not app else ""))
         print(f"  version:  {it.old_version or '-'}  ->  {it.version_name}"
               + (f" (code {it.version_code})" if it.version_code is not None else ""))
-        print(f"  file:     {it.upload.name} ({human_size(it.size)})  sha256 {it.sha256[:16]}...")
+        print(f"  file:     {rel(it.upload)} ({human_size(it.size)})  sha256 {it.sha256[:16]}...")
         print(f"  release:  {it.tag}")
         if it.platform == "android":
             print(f"  package:  {it.source_id}, minSdk {it.min_sdk}, cert {it.cert[:16]}...")
@@ -505,9 +610,10 @@ def cmd_publish(args) -> None:
         changelog = args.changelog if args.changelog is not None else it.changelog
         print(f"  changelog: {changelog or '(none)'}")
         if it.app_id in icons:
-            print(f"  icon:     {icons[it.app_id].name}")
+            print(f"  icon:     {rel(icons[it.app_id])}")
         for n in it.notes:
             print(f"  {n}")
+    print_skipped()
     print(f"\nThen: update catalog.json, sign it, commit and {'(not) ' if args.no_push else ''}push catalog/.")
 
     if args.dry_run:
@@ -802,12 +908,13 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="publish.py", description=__doc__.split("\n\n")[0])
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    p = sub.add_parser("publish", help="publish what is in incoming/")
+    p = sub.add_parser("publish", help="publish what is new in incoming/ and its app folders")
     p.add_argument("--dry-run", action="store_true", help="only show the plan")
     p.add_argument("--yes", action="store_true", help="do not ask for confirmation")
     p.add_argument("--no-push", action="store_true", help="commit but do not push")
     p.add_argument("--changelog", help="changelog text for this version")
     p.add_argument("--app-id", help="catalog id to publish under (merges e.g. apk + zip ids)")
+    p.add_argument("--folder", help="only scan this app folder, e.g. Classly (incoming/Classly/)")
     p.add_argument("--name", help="display name (required for a new app without a known name)")
     p.add_argument("--description", help="short description shown in the store")
     p.set_defaults(fn=cmd_publish)

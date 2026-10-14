@@ -253,8 +253,10 @@ The store is listed in its own catalog as `com.likestore.market`, so it can upda
    * Android: a **release-signed** APK (the FLET_… variables from Part 4).
    * Windows: the **portable ZIP build** → `<app-id>-win-<version>.zip` +
      `<app-id>-win-<version>.json` (not the installer).
-3. **Copy into `incoming\`**: the `.apk`, and/or the `.zip` with its `.json`. Optionally
-   add `<app-id>.png` as the icon. Nothing else; unknown files make the script stop.
+3. **Copy into the app's folder** (`incoming\Classly\`, `incoming\Luma\`, `incoming\Whylist\`,
+   `incoming\XReel\`; create a new folder for a new app): the `.apk`, and/or the `.zip` with
+   its `.json`. Optionally add `icon.png` as the icon. Old builds may stay in the folder (they
+   are skipped); other kinds of files make the script stop.
 4. **Publish**, either way:
    * Tell Claude Code: *"Update Classly, I dropped the files."* Claude runs the dry run,
      shows you the plan, **waits for your yes**, publishes, then runs `verify`.

@@ -149,6 +149,87 @@ class ValidateTest(unittest.TestCase):
         self.assertEqual(it.app_id, "com.x.notes")
 
 
+class AppFoldersTest(unittest.TestCase):
+    """incoming/<App>/ folders: newest build per app wins, published ones are skipped."""
+
+    def setUp(self):
+        self.incoming = Path(tempfile.mkdtemp())
+        patcher = mock.patch.object(publish, "INCOMING", self.incoming)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def drop_zip(self, folder, version, app_id="notes", content="x"):
+        d = self.incoming / folder
+        d.mkdir(exist_ok=True)
+        z = d / f"{app_id}-win-{version}.zip"
+        with zipfile.ZipFile(z, "w") as f:
+            f.writestr("Notes.exe", content)
+        meta = {"id": app_id, "name": app_id.title(), "entry": "Notes.exe", "versionName": version,
+                "sha256": publish.sha256_file(z)}
+        z.with_suffix(".json").write_text(json.dumps(meta), encoding="utf-8")
+        return z
+
+    def scan(self, catalog, folder=None):
+        found, icons = publish.scan_incoming(folder)
+        publish.resolve_ids(found, catalog, None)
+        new, skipped = publish.select_new(found, catalog)
+        return new, skipped, publish.resolve_icons(icons, found)
+
+    def published(self, version, sha="00" * 32):
+        return {"apps": [{"id": "notes", "name": "Notes", "packages": {
+            "windows": {"versionName": version, "sha256": sha}}}]}
+
+    def test_newest_build_in_folder_wins(self):
+        self.drop_zip("Notes", "1.0.0")
+        self.drop_zip("Notes", "1.2.0")
+        self.drop_zip("Notes", "1.10.0")
+        new, skipped, _ = self.scan(self.published("1.0.0"))
+        self.assertEqual([i.version_name for i in new], ["1.10.0"])
+        self.assertEqual(sorted(i.version_name for i, _ in skipped), ["1.0.0", "1.2.0"])
+
+    def test_several_folders_and_root(self):
+        self.drop_zip("Notes", "1.1.0")
+        self.drop_zip("Todo", "2.0.0", app_id="todo")
+        (self.incoming / "desktop.ini").write_text("")
+        new, _, _ = self.scan({"apps": []})
+        self.assertEqual(sorted(i.app_id for i in new), ["notes", "todo"])
+        new, _, _ = self.scan({"apps": []}, folder="Todo")
+        self.assertEqual([i.app_id for i in new], ["todo"])
+
+    def test_already_published_is_skipped(self):
+        z = self.drop_zip("Notes", "1.0.0")
+        new, skipped, _ = self.scan(self.published("1.0.0", publish.sha256_file(z)))
+        self.assertEqual(new, [])
+        self.assertEqual(skipped[0][1], "already published")
+
+    def test_same_version_other_bytes_is_kept_for_validate_to_stop(self):
+        self.drop_zip("Notes", "1.0.0")
+        new, _, _ = self.scan(self.published("1.0.0"))
+        self.assertEqual(len(new), 1)
+        with mock.patch.object(publish, "release_exists", return_value=False):
+            with self.assertRaises(Stop):
+                publish.validate(new, self.published("1.0.0"), {}, args())
+
+    def test_two_different_builds_same_version_stop(self):
+        self.drop_zip("Notes", "1.1.0", content="a")
+        self.drop_zip("Notes2", "1.1.0", content="b")
+        with self.assertRaises(Stop):
+            self.scan(self.published("1.0.0"))
+
+    def test_icon_png_in_folder_belongs_to_its_app(self):
+        self.drop_zip("Notes", "1.1.0")
+        (self.incoming / "Notes" / "icon.png").write_bytes(b"\x89PNG")
+        _, _, (icons, notes) = self.scan(self.published("1.0.0"))
+        self.assertEqual(list(icons), ["notes"])
+        self.assertEqual(notes, [])
+
+    def test_unknown_file_in_folder_stops(self):
+        self.drop_zip("Notes", "1.1.0")
+        (self.incoming / "Notes" / "Notes-Setup.exe").write_bytes(b"MZ")
+        with self.assertRaises(Stop):
+            self.scan(self.published("1.0.0"))
+
+
 class EditIconTest(unittest.TestCase):
     cfg = {"catalogBaseUrl": "https://o.github.io/r/"}
 
