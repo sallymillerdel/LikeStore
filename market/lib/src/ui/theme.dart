@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 
 /// Colors the Material scheme has no slot for: the page gradient, the
@@ -171,23 +173,61 @@ BoxDecoration panelDecoration(BuildContext context, {Color? color, Color? border
 }
 
 /// The page background: a soft teal glow at the top fading out.
+///
+/// The gradient is long and dark, so plain 8-bit rendering shows it as wide
+/// bands. It is drawn with a dithering shader ([load] it before `runApp`);
+/// without one it falls back to a plain [LinearGradient].
 class PageBackground extends StatelessWidget {
   const PageBackground({super.key, required this.child});
 
   final Widget child;
 
+  static ui.FragmentProgram? _program;
+
+  static Future<void> load() async {
+    try {
+      _program = await ui.FragmentProgram.fromAsset('shaders/page_gradient.frag');
+    } catch (e) {
+      debugPrint('Page gradient shader unavailable: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final x = StoreColors.of(context);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: const Alignment(0.4, 0.6),
-          colors: [x.pageTop, x.pageBottom],
-        ),
-      ),
-      child: child,
-    );
+    return CustomPaint(painter: _GradientPainter(x.pageTop, x.pageBottom, _program), child: child);
   }
+}
+
+class _GradientPainter extends CustomPainter {
+  _GradientPainter(this.from, this.to, this.program);
+
+  final Color from;
+  final Color to;
+  final ui.FragmentProgram? program;
+
+  // From the top-left corner to Alignment(0.4, 0.6).
+  static const _end = Offset(0.7, 0.8);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final end = Offset(size.width * _end.dx, size.height * _end.dy);
+    final paint = Paint();
+    final program = this.program;
+    if (program == null) {
+      paint.shader = ui.Gradient.linear(Offset.zero, end, [from, to]);
+    } else {
+      final s = program.fragmentShader();
+      var i = 0;
+      for (final v in [0.0, 0.0, end.dx, end.dy, from.r, from.g, from.b, from.a, to.r, to.g, to.b, to.a]) {
+        s.setFloat(i++, v);
+      }
+      paint.shader = s;
+    }
+    canvas.drawRect(rect, paint);
+  }
+
+  @override
+  bool shouldRepaint(_GradientPainter old) => old.from != from || old.to != to || old.program != program;
 }

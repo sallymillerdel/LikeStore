@@ -7,21 +7,38 @@ import '../store_controller.dart';
 import 'format.dart';
 import 'theme.dart';
 
+/// Settings: a bottom sheet on phones, a centered dialog on wide windows.
 Future<void> showSettingsSheet(BuildContext context, StoreController c) {
+  if (MediaQuery.sizeOf(context).width > 700) {
+    return showDialog<void>(
+      context: context,
+      builder: (context) => Dialog(
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+          side: BorderSide(color: StoreColors.of(context).cardBorder),
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: _Settings(controller: c, dialog: true),
+        ),
+      ),
+    );
+  }
   return showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
     useSafeArea: true,
     isScrollControlled: true,
-    constraints: const BoxConstraints(maxWidth: 640),
-    builder: (context) => _Settings(controller: c),
+    builder: (context) => _Settings(controller: c, dialog: false),
   );
 }
 
 class _Settings extends StatefulWidget {
-  const _Settings({required this.controller});
+  const _Settings({required this.controller, required this.dialog});
 
   final StoreController controller;
+  final bool dialog;
 
   @override
   State<_Settings> createState() => _SettingsState();
@@ -44,14 +61,22 @@ class _SettingsState extends State<_Settings> {
   Widget build(BuildContext context) {
     final win = c.windowsSettings;
     final theme = Theme.of(context);
+    final muted = theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant);
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: EdgeInsets.only(top: widget.dialog ? 12 : 0, bottom: widget.dialog ? 20 : 24),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-            child: Text('Settings', style: theme.textTheme.headlineSmall),
+            padding: EdgeInsets.fromLTRB(24, 0, widget.dialog ? 12 : 24, widget.dialog ? 8 : 16),
+            child: Row(
+              children: [
+                Expanded(child: Text('Settings', style: theme.textTheme.headlineSmall)),
+                if (widget.dialog)
+                  IconButton(tooltip: 'Close', onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
+              ],
+            ),
           ),
           _group(context, [
             if (win != null) ..._windows(win),
@@ -70,12 +95,14 @@ class _SettingsState extends State<_Settings> {
           ]),
           const SizedBox(height: 12),
           _group(context, [
-            ListTile(dense: true, title: const Text('Store version'), trailing: Text(_version)),
             ListTile(
-              dense: true,
+              title: const Text('Store version'),
+              trailing: Text(_version, style: muted),
+            ),
+            ListTile(
               title: const Text('Catalog'),
-              subtitle: Text(kCatalogBaseUrl),
-              trailing: Text(formatDate(c.catalog?.generatedAt)),
+              subtitle: Text(kCatalogBaseUrl, maxLines: 1, overflow: TextOverflow.ellipsis),
+              trailing: Text(formatDate(c.catalog?.generatedAt), style: muted),
             ),
           ]),
         ],

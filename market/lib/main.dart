@@ -9,6 +9,7 @@ import 'src/ui/window_frame.dart';
 Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   await initWindowFrame();
+  await PageBackground.load();
   final controller = await StoreController.create(args);
   runApp(LikeStoreApp(controller: controller));
   controller.start();
