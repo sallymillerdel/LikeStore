@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-14T18:43:10Z",
+  "generatedAt": "2026-10-14T19:32:25Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -36,30 +36,30 @@
     {
       "id": "com.likestore.market",
       "name": "LikeStore",
-      "description": "My app store",
+      "description": "The official store for SLSoft apps",
       "packages": {
         "windows": {
           "package": "zip",
           "entry": "LikeStore.exe",
-          "versionName": "1.0.0",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-windows-1.0.0/com.likestore.market-win-1.0.0.zip",
-          "sha256": "1deecfa63dbc0b6801fa093455d4f6643589ca06f67335150df8008231ec7e3b",
-          "sizeBytes": 36404539,
-          "changelog": "",
-          "releasedAt": "2026-10-14T16:55:35Z"
+          "versionName": "1.0.2",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-windows-1.0.2/com.likestore.market-win-1.0.2.zip",
+          "sha256": "6a31b4a0aeb10c70ebd64ac89563b88f8ee60c63b055df9923b277355ed5892c",
+          "sizeBytes": 36726871,
+          "changelog": "Start with Windows option (replaces the shortcut options). Choose where apps are installed in Settings. App pages on Windows now open as a dialog like Settings. About section in Settings.",
+          "releasedAt": "2026-10-14T19:32:25Z"
         },
         "android": {
           "package": "apk",
           "packageName": "com.likestore.market",
-          "versionCode": 1,
-          "versionName": "1.0.0",
+          "versionCode": 3,
+          "versionName": "1.0.2",
           "minSdk": 24,
           "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-android-1.0.0/com.likestore.market-android-1.0.0.apk",
-          "sha256": "d18c4386ec77a1026ca5619afca63e8489a19cbf80764beaf349ce03e2beeb49",
-          "sizeBytes": 31956458,
-          "changelog": "",
-          "releasedAt": "2026-10-14T16:55:35Z"
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-android-1.0.2/com.likestore.market-android-1.0.2.apk",
+          "sha256": "2730f00ac01372487f945a8667d527d03ab0e6787cd37d47dd91aa242ff0f122",
+          "sizeBytes": 32077781,
+          "changelog": "Start with Windows option (replaces the shortcut options). Choose where apps are installed in Settings. App pages on Windows now open as a dialog like Settings. About section in Settings.",
+          "releasedAt": "2026-10-14T19:32:25Z"
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.likestore.market.png?v=26a81da73cf0"
