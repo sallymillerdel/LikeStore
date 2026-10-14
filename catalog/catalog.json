@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-14T19:49:00Z",
+  "generatedAt": "2026-10-14T20:18:11Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -41,25 +41,25 @@
         "windows": {
           "package": "zip",
           "entry": "LikeStore.exe",
-          "versionName": "1.0.2",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-windows-1.0.2/com.likestore.market-win-1.0.2.zip",
-          "sha256": "6a31b4a0aeb10c70ebd64ac89563b88f8ee60c63b055df9923b277355ed5892c",
-          "sizeBytes": 36726871,
-          "changelog": "Start with Windows option (replaces the shortcut options). Choose where apps are installed in Settings. App pages on Windows now open as a dialog like Settings. About section in Settings.",
-          "releasedAt": "2026-10-14T19:32:25Z"
+          "versionName": "1.0.4",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-windows-1.0.4/com.likestore.market-win-1.0.4.zip",
+          "sha256": "e5f4ed9ff5fa81fdec022f5f2a154facef877b36afe846aff1cac349669e722e",
+          "sizeBytes": 12356241,
+          "changelog": "Fixes the Android app closing right after launch.",
+          "releasedAt": "2026-10-14T20:18:11Z"
         },
         "android": {
           "package": "apk",
           "packageName": "com.likestore.market",
-          "versionCode": 4,
-          "versionName": "1.0.4",
+          "versionCode": 5,
+          "versionName": "1.0.5",
           "minSdk": 24,
           "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-android-1.0.4/com.likestore.market-android-1.0.4.apk",
-          "sha256": "9e79dbf7b7a6c518fe3699d7cceb00304e2f9a9c30a43d9de357da12396ae89f",
-          "sizeBytes": 31956393,
-          "changelog": "Fixed the Android app icon being cropped on the home screen.",
-          "releasedAt": "2026-10-14T19:49:00Z"
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-android-1.0.5/com.likestore.market-android-1.0.5.apk",
+          "sha256": "5012bb8ef2765a7fae45304677967b2e1b21eef2719b7eb5758e89a7d33a347e",
+          "sizeBytes": 31989161,
+          "changelog": "Fixes the Android app closing right after launch.",
+          "releasedAt": "2026-10-14T20:18:11Z"
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.likestore.market.png?v=26a81da73cf0"
