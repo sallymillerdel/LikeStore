@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-14T21:28:36Z",
+  "generatedAt": "2026-10-14T21:41:17Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -41,25 +41,25 @@
         "windows": {
           "package": "zip",
           "entry": "LikeStore.exe",
-          "versionName": "1.0.4",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-windows-1.0.4/com.likestore.market-win-1.0.4.zip",
-          "sha256": "e5f4ed9ff5fa81fdec022f5f2a154facef877b36afe846aff1cac349669e722e",
-          "sizeBytes": 12356241,
-          "changelog": "Fixes the Android app closing right after launch.",
-          "releasedAt": "2026-10-14T20:18:11Z"
+          "versionName": "1.0.6",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-windows-1.0.6/com.likestore.market-win-1.0.6.zip",
+          "sha256": "59294665c8b65bccc4df5a5c2a138327bdb71b93117c063785e9a7a28930ce1f",
+          "sizeBytes": 12356504,
+          "changelog": "",
+          "releasedAt": "2026-10-14T21:41:17Z"
         },
         "android": {
           "package": "apk",
           "packageName": "com.likestore.market",
-          "versionCode": 5,
-          "versionName": "1.0.5",
+          "versionCode": 10007,
+          "versionName": "1.0.7",
           "minSdk": 24,
           "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-android-1.0.5/com.likestore.market-android-1.0.5.apk",
-          "sha256": "5012bb8ef2765a7fae45304677967b2e1b21eef2719b7eb5758e89a7d33a347e",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-android-1.0.7/com.likestore.market-android-1.0.7.apk",
+          "sha256": "2c1d1dd06f959367df8c0436fbfcec174191041e6cd7cdb66cfcd4d988c00c2b",
           "sizeBytes": 31989161,
-          "changelog": "Fixes the Android app closing right after launch.",
-          "releasedAt": "2026-10-14T20:18:11Z"
+          "changelog": "",
+          "releasedAt": "2026-10-14T21:41:17Z"
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.likestore.market.png?v=26a81da73cf0"
