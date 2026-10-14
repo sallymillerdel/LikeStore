@@ -42,6 +42,7 @@ android {
             // Without ANDROID_KEYSTORE the build falls back to the debug key,
             // which is fine for testing but cannot update a release install.
             signingConfig = signingConfigs.getByName(if (releaseKeystore != null) "release" else "debug")
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 }
