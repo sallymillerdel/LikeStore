@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-14T21:21:15Z",
+  "generatedAt": "2026-10-14T21:28:36Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -10,25 +10,25 @@
         "android": {
           "package": "apk",
           "packageName": "com.classly.app",
-          "versionCode": 1,
-          "versionName": "1.0.0",
+          "versionCode": 20402,
+          "versionName": "2.4.2",
           "minSdk": 24,
           "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.classly.app-android-1.0.0/com.classly.app-android-1.0.0.apk",
-          "sha256": "77a77e574624892598b08468859abe8381cff9ccb0f61b70f09fc49442c2743e",
-          "sizeBytes": 160694266,
-          "changelog": "First release: import a screenshot of your timetable and let Gemini read it, browse your classes by month and day, track assignments per class, and sign in with Google to sync between PC and phone.",
-          "releasedAt": "2026-10-14T18:30:45Z"
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.classly.app-android-2.4.2/com.classly.app-android-2.4.2.apk",
+          "sha256": "6e765ddba973e36ebcba377af0ed35cda59e8529dc2cd639d748ef9ae5a4e7d0",
+          "sizeBytes": 160694326,
+          "changelog": "",
+          "releasedAt": "2026-10-14T21:28:36Z"
         },
         "windows": {
           "package": "zip",
           "entry": "classly.exe",
-          "versionName": "1.0.0",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.classly.app-windows-1.0.0/com.classly.app-win-1.0.0.zip",
-          "sha256": "35f4a5ff9407c720064b686c82f62c4ffe42969bee917f3d895556b198a76c89",
-          "sizeBytes": 49791577,
-          "changelog": "First release: import a screenshot of your timetable and let Gemini read it, browse your classes by month and day, track assignments per class, and sign in with Google to sync between PC and phone.",
-          "releasedAt": "2026-10-14T18:30:45Z"
+          "versionName": "2.4.1",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.classly.app-windows-2.4.1/com.classly.app-win-2.4.1.zip",
+          "sha256": "1702f3779d2a6a712e6905c9a78a350244fbddc91f6d298e7a94738c2c885d27",
+          "sizeBytes": 49791085,
+          "changelog": "",
+          "releasedAt": "2026-10-14T21:28:36Z"
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.classly.app.png?v=a5a1af4d755c"
@@ -104,15 +104,15 @@
         "android": {
           "package": "apk",
           "packageName": "com.whylist.whylist",
-          "versionCode": 1,
-          "versionName": "1.0.0",
+          "versionCode": 10201,
+          "versionName": "1.2.1",
           "minSdk": 26,
           "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.whylist.app-android-1.0.0/com.whylist.whylist-android-1.0.0.apk",
-          "sha256": "8907a4ca46723836c8fb809237cf67262cc541e1509fe07b1523ba78d6a7c6f6",
-          "sizeBytes": 140931435,
-          "changelog": "First release. Checks your chosen sites every second over mobile data, even when Wi-Fi or a VPN is on. You can switch the checks to Wi-Fi, run them through or around a VPN, and add, rename or remove up to 20 sites.",
-          "releasedAt": "2026-10-14T17:58:27Z"
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.whylist.app-android-1.2.1/com.whylist.whylist-android-1.2.1.apk",
+          "sha256": "46c0b03c2cd83c672e45a6aa16c2fee4acf7ffb8c093ed056953f42fe12e4715",
+          "sizeBytes": 140931355,
+          "changelog": "",
+          "releasedAt": "2026-10-14T21:28:36Z"
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.whylist.app.png?v=43d4fb175c7a"
