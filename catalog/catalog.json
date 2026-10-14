@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-14T18:30:45Z",
+  "generatedAt": "2026-10-14T18:31:09Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -114,6 +114,24 @@
           "releasedAt": "2026-10-14T17:58:27Z"
         }
       }
+    },
+    {
+      "id": "com.xreel.app",
+      "name": "XReel",
+      "description": "Turns long stream recordings into short clips",
+      "packages": {
+        "windows": {
+          "package": "zip",
+          "entry": "XReel.exe",
+          "versionName": "8.14.1",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.xreel.app-windows-8.14.1/com.xreel.app-win-8.14.1.zip",
+          "sha256": "dc7f0b75f9ecd059c95b1245ad590a8daa9538f5187db259702ceb5249fa0058",
+          "sizeBytes": 228517131,
+          "changelog": "First release in LikeStore: turn a YouTube/Twitch VOD or a local video into short clips. Transcribes the audio, finds highlight moments from chat activity and the transcript, and exports the clips you pick. Portable build with ffmpeg and Deno included; add your Gemini API key in Settings on first launch.",
+          "releasedAt": "2026-10-14T18:31:09Z"
+        }
+      },
+      "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.xreel.app.png?v=e232f422ee5c"
     }
   ]
 }
