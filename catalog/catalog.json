@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-14T21:14:28Z",
+  "generatedAt": "2026-10-14T21:17:07Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -116,6 +116,24 @@
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.whylist.app.png?v=43d4fb175c7a"
+    },
+    {
+      "id": "com.xreel.app",
+      "name": "XReel",
+      "description": "Turns long stream recordings into short clips",
+      "packages": {
+        "windows": {
+          "package": "zip",
+          "entry": "XReel.exe",
+          "versionName": "1.8.4",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.xreel.app-windows-1.8.4/com.xreel.app-win-1.8.4.zip",
+          "sha256": "06e03af2464ab979cead58e140c98c3e082aced178b294b667c1dc609e2ecb78",
+          "sizeBytes": 228516389,
+          "changelog": "",
+          "releasedAt": "2026-10-14T21:17:07Z"
+        }
+      },
+      "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.xreel.app.png?v=e232f422ee5c"
     }
   ]
 }
