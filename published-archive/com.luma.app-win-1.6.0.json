@@ -1,0 +1,10 @@
+{
+    "id":  "app.luma.luma",
+    "name":  "Luma",
+    "platform":  "windows",
+    "package":  "zip",
+    "entry":  "luma.exe",
+    "versionName":  "1.6.0",
+    "sha256":  "cdbc0fc4857e4d5f71715a467ca77a9eb2b9ed77484ec4711f258af8024efae1",
+    "sizeBytes":  44910942
+}
