@@ -1,29 +1,22 @@
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../config.g.dart';
+import '../installer/installer.dart';
 import '../installer/windows_installer.dart';
 import '../store_controller.dart';
 import 'format.dart';
-import 'theme.dart';
+import 'panel.dart';
+
+/// What the store is, shown under About.
+const kStoreAbout = '$kStoreName is the official store for SLSoft apps. It installs SLSoft apps '
+    'on Android and Windows and keeps them up to date.';
 
 /// Settings: a bottom sheet on phones, a centered dialog on wide windows.
 Future<void> showSettingsSheet(BuildContext context, StoreController c) {
-  if (MediaQuery.sizeOf(context).width > 700) {
-    return showDialog<void>(
-      context: context,
-      builder: (context) => Dialog(
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28),
-          side: BorderSide(color: StoreColors.of(context).cardBorder),
-        ),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 520),
-          child: _Settings(controller: c, dialog: true),
-        ),
-      ),
-    );
+  if (useDialog(context)) {
+    return showPanelDialog(context, builder: (context) => _Settings(controller: c, dialog: true));
   }
   return showModalBottomSheet<void>(
     context: context,
@@ -47,6 +40,7 @@ class _Settings extends StatefulWidget {
 class _SettingsState extends State<_Settings> {
   String _version = '';
   bool? _background;
+  String? _folderError;
 
   StoreController get c => widget.controller;
 
@@ -68,17 +62,8 @@ class _SettingsState extends State<_Settings> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: EdgeInsets.fromLTRB(24, 0, widget.dialog ? 12 : 24, widget.dialog ? 8 : 16),
-            child: Row(
-              children: [
-                Expanded(child: Text('Settings', style: theme.textTheme.headlineSmall)),
-                if (widget.dialog)
-                  IconButton(tooltip: 'Close', onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close)),
-              ],
-            ),
-          ),
-          _group(context, [
+          PanelTitle(dialog: widget.dialog, child: Text('Settings', style: theme.textTheme.headlineSmall)),
+          PanelGroup(children: [
             if (win != null) ..._windows(win),
             if (c.android != null)
               SwitchListTile(
@@ -94,7 +79,11 @@ class _SettingsState extends State<_Settings> {
               ),
           ]),
           const SizedBox(height: 12),
-          _group(context, [
+          PanelGroup(children: [
+            ListTile(
+              title: const Text('About'),
+              subtitle: Text(kStoreAbout, style: muted?.copyWith(height: 1.4)),
+            ),
             ListTile(
               title: const Text('Store version'),
               trailing: Text(_version, style: muted),
@@ -110,42 +99,64 @@ class _SettingsState extends State<_Settings> {
     );
   }
 
-  /// A rounded panel of list tiles.
-  Widget _group(BuildContext context, List<Widget> tiles) {
-    if (tiles.isEmpty) return const SizedBox.shrink();
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: panelDecoration(context, radius: 20),
-      clipBehavior: Clip.antiAlias,
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Material(
-        type: MaterialType.transparency,
-        child: Column(children: tiles),
-      ),
-    );
-  }
+  WindowsInstaller get _win => c.installer as WindowsInstaller;
 
   List<Widget> _windows(WindowsSettings s) => [
-    SwitchListTile(
-      title: const Text('Start Menu shortcuts'),
-      value: s.startMenuShortcut,
-      onChanged: (v) => _set(s, 'startMenuShortcut', v),
+    ListTile(
+      title: const Text('Install location'),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SelectableText(_win.appsDir),
+          const SizedBox(height: 2),
+          Text(
+            _folderError ?? 'New installs and updates go here. Installed apps move on their next update.',
+            style: TextStyle(
+              fontSize: 12,
+              color: _folderError != null ? Theme.of(context).colorScheme.error : null,
+            ),
+          ),
+        ],
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextButton(onPressed: _win.openAppsDir, child: const Text('Open')),
+          const SizedBox(width: 4),
+          FilledButton.tonal(onPressed: _changeFolder, child: const Text('Change')),
+        ],
+      ),
     ),
     SwitchListTile(
-      title: const Text('Desktop shortcuts'),
-      value: s.desktopShortcut,
-      onChanged: (v) => _set(s, 'desktopShortcut', v),
+      title: const Text('Start with Windows'),
+      subtitle: const Text('Open $kStoreName when you sign in'),
+      value: s.startWithSystem,
+      onChanged: (v) async {
+        await (c.installer as WindowsInstaller).setStartWithSystem(v);
+        setState(() {});
+      },
     ),
     SwitchListTile(
       title: const Text('Check for updates on startup'),
       value: s.checkOnStartup,
-      onChanged: (v) => _set(s, 'checkOnStartup', v, refreshShortcuts: false),
+      onChanged: (v) async {
+        await s.set('checkOnStartup', v);
+        setState(() {});
+      },
     ),
   ];
 
-  Future<void> _set(WindowsSettings s, String key, bool v, {bool refreshShortcuts = true}) async {
-    await s.set(key, v);
-    setState(() {});
-    if (refreshShortcuts) await (c.installer as WindowsInstaller).refreshShortcuts();
+  Future<void> _changeFolder() async {
+    final dir = await getDirectoryPath(
+      initialDirectory: _win.appsDir,
+      confirmButtonText: 'Use this folder',
+    );
+    if (dir == null) return;
+    try {
+      await _win.setAppsDir(dir);
+      setState(() => _folderError = null);
+    } on InstallException catch (e) {
+      setState(() => _folderError = e.message);
+    }
   }
 }

@@ -154,6 +154,18 @@ void main() {
     });
   });
 
+  group('store location', () {
+    test('finds the apps folder Setup chose', () {
+      final exe = p.join('D:', 'Apps', 'com.likestore.market', '1.0.2', 'LikeStore.exe');
+      expect(WindowsInstaller.storeBaseFor(exe), p.join('D:', 'Apps'));
+    });
+
+    test('a build run from elsewhere has none', () {
+      final exe = p.join('D:', 'src', 'market', 'build', 'Release', 'LikeStore.exe');
+      expect(WindowsInstaller.storeBaseFor(exe), isNull);
+    });
+  });
+
   group('portable zip', () {
     late Directory dir;
     setUp(() => dir = Directory.systemTemp.createTempSync('likestore_zip'));

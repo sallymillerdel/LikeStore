@@ -3,13 +3,16 @@
 ;   /DAppVersion=<version from pubspec.yaml>  /DSourceDir=<flutter Release folder>
 ;   /DOutputDir=<where Setup goes>
 ;
-; Per-user install, no admin/UAC. The files go into the same place the store's
-; own self-update uses (windows_installer.dart):
+; Per-user install, no admin/UAC. The user picks an apps folder ({app}, by
+; default %LocalAppData%\LikeStore\apps) and the store goes into the same place
+; its own self-update uses (windows_installer.dart):
 ;
-;   %LocalAppData%\LikeStore\apps\com.likestore.market\<version>\
+;   {app}\com.likestore.market\<version>\
 ;
-; so after the first self-update the store simply removes this folder like any
-; other old version. The uninstaller therefore lives outside it, in
+; The store recognises that layout, keeps its self-updates there and installs
+; apps next to it ({app}\<app-id>\<version>\) unless Settings picks another
+; folder. After the first self-update it removes this version folder like any
+; other old version, so the uninstaller lives outside it, in
 ; %LocalAppData%\LikeStore\uninstall\.
 
 #ifndef AppVersion
@@ -33,15 +36,21 @@ AppId={{469D48EE-4129-45E0-A061-8CB57497F8FA}
 AppName={#AppName}
 AppVersion={#AppVersion}
 AppVerName={#AppName} {#AppVersion}
-AppPublisher={#AppName}
+AppPublisher=SLSoft
+AppComments=The official store for SLSoft apps
+VersionInfoCompany=SLSoft
+VersionInfoDescription=LikeStore - the official store for SLSoft apps
 VersionInfoVersion={#AppVersion}
 VersionInfoProductName={#AppName}
 PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
-DefaultDirName={#StoreRoot}\apps\{#MarketId}\{#AppVersion}
-UsePreviousAppDir=no
-DisableDirPage=yes
+DefaultDirName={#StoreRoot}\apps
+; A newer Setup offers the folder of the existing install (see InitializeWizard).
+UsePreviousAppDir=yes
+DisableDirPage=no
+AppendDefaultDirName=no
+DirExistsWarning=no
 DisableProgramGroupPage=yes
 DisableReadyPage=yes
 UninstallFilesDir={#StoreRoot}\uninstall
@@ -54,21 +63,32 @@ SolidCompression=yes
 OutputDir={#OutputDir}
 OutputBaseFilename=LikeStore-Setup-{#AppVersion}
 
+#define StoreDir "{app}\" + MarketId + "\" + AppVersion
+
+[Messages]
+SelectDirDesc=Where should [name] and your apps be installed?
+SelectDirLabel3=Setup will install [name] into this folder. Apps you install from [name] go here too; you can change that later in [name] Settings.
+
 [Files]
-Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#SourceDir}\*"; DestDir: "{#StoreDir}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 ; Same file the store itself maintains (Start Menu\Programs\LikeStore.lnk), so a
 ; self-update re-points it at the new version.
-Name: "{userprograms}\{#AppName}"; Filename: "{app}\{#AppExe}"; WorkingDir: "{app}"
+Name: "{userprograms}\{#AppName}"; Filename: "{#StoreDir}\{#AppExe}"; WorkingDir: "{#StoreDir}"
 
 [Run]
-Filename: "{app}\{#AppExe}"; WorkingDir: "{app}"; Description: "Start {#AppName}"; Flags: nowait postinstall skipifsilent
+Filename: "{#StoreDir}\{#AppExe}"; WorkingDir: "{#StoreDir}"; Description: "Start {#AppName}"; Flags: nowait postinstall skipifsilent
+
+[UninstallRun]
+; "Start with Windows" (Settings) adds this value; it points into the folder being removed.
+Filename: "{sys}\reg.exe"; Parameters: "delete ""HKCU\Software\Microsoft\Windows\CurrentVersion\Run"" /v {#AppName} /f"; Flags: runhidden; RunOnceId: "RemoveRunEntry"
 
 [UninstallDelete]
 ; Every version of the store (installed by Setup or by self-update). Apps
-; installed through the store (apps\<other-id>\), their shortcuts and the
-; store's settings are kept.
+; installed through the store ({app}\<other-id>\), their shortcuts and the
+; store's settings are kept. The second line covers installs by Setup 1.0.0.
+Type: filesandordirs; Name: "{app}\{#MarketId}"
 Type: filesandordirs; Name: "{#StoreRoot}\apps\{#MarketId}"
 Type: files; Name: "{userdesktop}\{#AppName}.lnk"
 
@@ -98,6 +118,17 @@ end;
 function InitializeSetup(): Boolean;
 begin
   Result := WaitForStoreToClose();
+end;
+
+procedure InitializeWizard();
+var
+  Dir: String;
+begin
+  // Setup 1.0.0 recorded the version folder ({app}\com.likestore.market\<version>)
+  // as the install folder; offer the apps folder above it instead.
+  Dir := RemoveBackslashUnlessRoot(WizardForm.DirEdit.Text);
+  if CompareText(ExtractFileName(ExtractFileDir(Dir)), '{#MarketId}') = 0 then
+    WizardForm.DirEdit.Text := ExtractFileDir(ExtractFileDir(Dir));
 end;
 
 function InitializeUninstall(): Boolean;

@@ -18,6 +18,9 @@ import 'installer.dart';
 ///   downloads\                     temporary downloads
 ///   apps\<app-id>\<version>\       one folder per unpacked version
 ///
+/// The apps folder can be moved: Setup may put the store elsewhere (apps then
+/// go next to it), and Settings can choose another folder for apps.
+///
 /// An update unpacks into a new version folder, switches installed.json to it
 /// and only then removes the old folder; if anything fails before the switch,
 /// the old version is untouched. User data never lives in these folders.
@@ -35,7 +38,50 @@ class WindowsInstaller implements PlatformInstaller {
   @override
   String get platform => 'windows';
 
-  Directory get _appsDir => Directory(p.join(storage.root.path, 'apps'));
+  /// %LocalAppData%\LikeStore\apps, where everything goes unless Setup or
+  /// Settings chose another folder.
+  String get _defaultAppsDir => p.join(storage.root.path, 'apps');
+
+  /// The folder Setup put the store in: the running exe sits in
+  /// `<folder>\com.likestore.market\<version>\`. Null for a build run elsewhere.
+  String? get _storeBaseDir => storeBaseFor(Platform.resolvedExecutable);
+
+  @visibleForTesting
+  static String? storeBaseFor(String exe) {
+    final idDir = p.dirname(p.dirname(exe));
+    return p.basename(idDir).toLowerCase() == _safeName(kMarketAppId).toLowerCase() ? p.dirname(idDir) : null;
+  }
+
+  /// Where apps are installed: chosen in Settings, else next to the store.
+  String get appsDir => settings.appsDir ?? _storeBaseDir ?? _defaultAppsDir;
+
+  Directory get _appsDir => Directory(appsDir);
+
+  /// Changes where new installs and updates go. Installed apps stay where
+  /// they are until their next update. Throws if [dir] is not writable.
+  Future<void> setAppsDir(String dir) async {
+    dir = p.normalize(p.absolute(dir));
+    bool inside(String parent) => p.equals(parent, dir) || p.isWithin(parent, dir);
+    if (inside(storage.root.path) && !inside(_defaultAppsDir)) {
+      throw InstallException('Choose a folder outside $kStoreName\'s own data folder.');
+    }
+    try {
+      await Directory(dir).create(recursive: true);
+      final probe = File(p.join(dir, '.likestore-write-test'));
+      await probe.writeAsString('ok', flush: true);
+      await probe.delete();
+    } on FileSystemException catch (e) {
+      throw InstallException('$kStoreName cannot write to $dir: ${e.osError?.message ?? e.message}');
+    }
+    final fallback = _storeBaseDir ?? _defaultAppsDir;
+    await settings.setString('appsDir', p.equals(dir, fallback) ? null : dir);
+  }
+
+  /// Opens the apps folder in Explorer.
+  Future<void> openAppsDir() async {
+    await _appsDir.create(recursive: true);
+    await Process.start('explorer.exe', [appsDir], mode: ProcessStartMode.detached);
+  }
 
   @override
   Future<void> init() async {
@@ -50,7 +96,10 @@ class WindowsInstaller implements PlatformInstaller {
       if (oldPid != null) await _waitForExit(oldPid);
     }
     unawaited(_cleanupOldVersions());
-    if (kReleaseMode) unawaited(_ensureOwnShortcut());
+    if (kReleaseMode) {
+      unawaited(_ensureOwnShortcut().then((_) => _migrateShortcutSettings()));
+      if (settings.startWithSystem) unawaited(_writeRunEntry(true));
+    }
   }
 
   // --- installed state -----------------------------------------------------
@@ -95,7 +144,9 @@ class WindowsInstaller implements PlatformInstaller {
       throw AppRunningException(app.name);
     }
 
-    final appDir = Directory(p.join(_appsDir.path, _safeName(app.id)));
+    // The store's own updates stay next to it (the folder Setup chose).
+    final base = isSelf ? (_storeBaseDir ?? appsDir) : appsDir;
+    final appDir = Directory(p.join(base, _safeName(app.id)));
     await appDir.create(recursive: true);
     final target = Directory(p.join(appDir.path, _safeName(pkg.versionName)));
     if (oldDir != null && p.equals(oldDir, target.path)) {
@@ -135,7 +186,14 @@ class WindowsInstaller implements PlatformInstaller {
           workingDirectory: target.path, mode: ProcessStartMode.detached);
       return true;
     }
-    if (oldDir != null) await _tryDelete(oldDir);
+    if (oldDir != null) {
+      await _tryDelete(oldDir);
+      // Moved to a new apps folder: drop the old, now empty, app folder.
+      final oldAppDir = Directory(p.dirname(oldDir));
+      if (!p.equals(oldAppDir.path, appDir.path) && await oldAppDir.exists() && await oldAppDir.list().isEmpty) {
+        await _tryDelete(oldAppDir.path);
+      }
+    }
     return false;
   }
 
@@ -157,7 +215,8 @@ class WindowsInstaller implements PlatformInstaller {
     final dir = rec['dir'] as String;
     if (await _isRunningFrom(dir)) throw AppRunningException(app.name);
     // Only the program folder goes; the app's data in %AppData% is kept.
-    await _tryDelete(p.join(_appsDir.path, _safeName(app.id)));
+    final appDir = p.dirname(dir);
+    await _tryDelete(p.basename(appDir) == _safeName(app.id) ? appDir : dir);
     (state['apps'] as Map<String, dynamic>).remove(app.id);
     await storage.writeJson(_stateFile, state);
     await _removeShortcuts(rec['name'] as String? ?? app.name);
@@ -216,14 +275,25 @@ class WindowsInstaller implements PlatformInstaller {
   /// Removes version folders that are no longer current (old versions whose
   /// files were locked earlier, leftovers of failed unpacks).
   Future<void> _cleanupOldVersions() async {
-    if (!await _appsDir.exists()) return;
     final state = await _readState();
+    final records = (state['apps'] as Map<String, dynamic>).values.cast<Map<String, dynamic>>().toList();
     final ownDir = p.dirname(Platform.resolvedExecutable);
-    await for (final appDir in _appsDir.list()) {
+    // Every apps folder in use: the current one, the default, Setup's, and
+    // the ones apps were installed into before the folder was changed.
+    final bases = <String>{
+      for (final b in [appsDir, _defaultAppsDir, ?_storeBaseDir, for (final r in records) p.dirname(p.dirname(r['dir'] as String))])
+        p.normalize(b).toLowerCase(),
+    };
+    for (final base in bases) {
+      if (!await Directory(base).exists()) continue;
+      await _cleanupIn(Directory(base), records, ownDir);
+    }
+  }
+
+  Future<void> _cleanupIn(Directory base, List<Map<String, dynamic>> records, String ownDir) async {
+    await for (final appDir in base.list()) {
       if (appDir is! Directory) continue;
-      final rec = (state['apps'] as Map<String, dynamic>).values.cast<Map<String, dynamic>>()
-          .where((r) => p.isWithin(appDir.path, r['dir'] as String))
-          .firstOrNull;
+      final rec = records.where((r) => p.isWithin(appDir.path, r['dir'] as String)).firstOrNull;
       final isOwn = p.isWithin(appDir.path, ownDir);
       if (rec == null && !isOwn) continue; // not ours to judge
       await for (final v in appDir.list()) {
@@ -257,11 +327,13 @@ class WindowsInstaller implements PlatformInstaller {
   String get _startMenuDir => p.join(Platform.environment['APPDATA'] ?? '',
       'Microsoft', 'Windows', 'Start Menu', 'Programs');
 
+  /// The store writes Start Menu shortcuts only. Desktop ones (made by store
+  /// versions before 1.0.2) are still removed with the app.
   Future<List<String>> _shortcutPaths(String name, {required bool onlyEnabled}) async {
     final file = '${name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_')}.lnk';
     return [
-      if (!onlyEnabled || settings.startMenuShortcut) p.join(_startMenuDir, file),
-      if (!onlyEnabled || settings.desktopShortcut) p.join(await _desktop(), file),
+      p.join(_startMenuDir, file),
+      if (!onlyEnabled) p.join(await _desktop(), file),
     ];
   }
 
@@ -285,13 +357,14 @@ class WindowsInstaller implements PlatformInstaller {
 
   /// Gives the store itself a Start Menu entry pointing at the running exe.
   Future<void> _ensureOwnShortcut() async {
-    if (!settings.startMenuShortcut) return;
     final link = File(p.join(_startMenuDir, '$kStoreName.lnk'));
     if (!await link.exists()) await _writeShortcuts(kStoreName, Platform.resolvedExecutable);
   }
 
-  /// Re-creates shortcuts for everything installed after a settings change.
-  Future<void> refreshShortcuts() async {
+  /// Once, after the shortcut settings were dropped: re-creates every
+  /// shortcut, which removes the Desktop ones the old settings could add.
+  Future<void> _migrateShortcutSettings() async {
+    if (!settings.has('startMenuShortcut') && !settings.has('desktopShortcut')) return;
     final state = await _readState();
     for (final rec in (state['apps'] as Map<String, dynamic>).values.cast<Map<String, dynamic>>()) {
       final name = rec['name'] as String? ?? '';
@@ -299,6 +372,28 @@ class WindowsInstaller implements PlatformInstaller {
       await _removeShortcuts(name);
       await _writeShortcuts(name, p.join(rec['dir'] as String, rec['entry'] as String));
     }
+    await settings.remove(['startMenuShortcut', 'desktopShortcut']);
+  }
+
+  // Start with Windows ---------------------------------------------------------
+
+  static const _runKey = r'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run';
+
+  /// Starts the store when the user signs in to Windows, or stops doing so.
+  Future<void> setStartWithSystem(bool on) async {
+    await settings.set('startWithSystem', on);
+    await _writeRunEntry(on);
+  }
+
+  /// Points the Run entry at the running exe (it moves to a new version folder
+  /// with every self-update), or removes it.
+  Future<void> _writeRunEntry(bool on) async {
+    final key = _psQuote(_runKey), name = _psQuote(kStoreName);
+    final command = on
+        ? 'Set-ItemProperty -Path $key -Name $name '
+              '-Value ([char]34 + ${_psQuote(Platform.resolvedExecutable)} + [char]34)'
+        : 'Remove-ItemProperty -Path $key -Name $name -ErrorAction SilentlyContinue';
+    await Process.run('powershell', ['-NoProfile', '-NonInteractive', '-Command', command]);
   }
 
   static String _psQuote(String s) => "'${s.replaceAll("'", "''")}'";
@@ -316,12 +411,31 @@ class WindowsSettings {
   static Future<WindowsSettings> load(Storage s) async =>
       WindowsSettings._(s, await s.readJson(_file));
 
-  bool get startMenuShortcut => _values['startMenuShortcut'] as bool? ?? true;
-  bool get desktopShortcut => _values['desktopShortcut'] as bool? ?? false;
+  bool get startWithSystem => _values['startWithSystem'] as bool? ?? false;
   bool get checkOnStartup => _values['checkOnStartup'] as bool? ?? true;
+
+  /// Apps folder chosen in Settings, null for the default.
+  String? get appsDir => _values['appsDir'] as String?;
+
+  bool has(String key) => _values.containsKey(key);
+
+  /// Sets a text value; null removes it.
+  Future<void> setString(String key, String? value) async {
+    if (value == null) {
+      _values.remove(key);
+    } else {
+      _values[key] = value;
+    }
+    await _storage.writeJson(_file, _values);
+  }
 
   Future<void> set(String key, bool value) async {
     _values[key] = value;
+    await _storage.writeJson(_file, _values);
+  }
+
+  Future<void> remove(List<String> keys) async {
+    keys.forEach(_values.remove);
     await _storage.writeJson(_file, _values);
   }
 }

@@ -3,30 +3,150 @@ import 'package:flutter/material.dart';
 import '../store_controller.dart';
 import 'app_card.dart';
 import 'format.dart';
+import 'panel.dart';
 import 'theme.dart';
 
+/// An app's page: a centered dialog laid out like Settings on wide windows,
+/// a bottom sheet on phones.
 Future<void> showAppDetails(BuildContext context, StoreController c, AppStatus s) {
+  Widget page(bool dialog) => ListenableBuilder(
+    listenable: c,
+    builder: (context, _) => _Details(controller: c, status: s, dialog: dialog),
+  );
+  if (useDialog(context)) {
+    return showPanelDialog(context, maxWidth: 600, builder: (context) => page(true));
+  }
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
     useSafeArea: true,
     constraints: const BoxConstraints(maxWidth: 640),
-    builder: (context) => ListenableBuilder(
-      listenable: c,
-      builder: (context, _) => _Details(controller: c, status: s),
-    ),
+    builder: (context) => page(false),
   );
 }
 
 class _Details extends StatelessWidget {
-  const _Details({required this.controller, required this.status});
+  const _Details({required this.controller, required this.status, required this.dialog});
 
   final StoreController controller;
   final AppStatus status;
+  final bool dialog;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => dialog ? _dialog(context) : _sheet(context);
+
+  // --- Windows: like the Settings dialog -------------------------------------
+
+  Widget _dialog(BuildContext context) {
+    final s = status;
+    final theme = Theme.of(context);
+    final muted = theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant);
+    final canUninstall = s.installed != null && !s.isStore && !s.busy;
+
+    Widget info(String label, String value, {bool strong = false}) => ListTile(
+      title: Text(label),
+      trailing: Text(
+        value,
+        style: strong
+            ? theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.primary, fontWeight: FontWeight.w700)
+            : muted,
+      ),
+    );
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(top: 20, bottom: 20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          PanelTitle(
+            child: Row(
+              children: [
+                AppIcon(url: s.app.icon, name: s.app.name, size: 52),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(s.app.name, style: theme.textTheme.headlineSmall),
+                      Text(s.app.id, style: theme.textTheme.bodySmall?.copyWith(color: muted?.color)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (s.app.description.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 8, 24, 4),
+              child: Text(s.app.description, style: muted?.copyWith(fontSize: 15, height: 1.4)),
+            ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+            child: Row(
+              children: [
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 140, minHeight: 44),
+                  child: ActionButton(status: s, controller: controller),
+                ),
+                if (canUninstall) ...[
+                  const SizedBox(width: 10),
+                  OutlinedButton.icon(
+                    onPressed: () => _confirmUninstall(context),
+                    icon: const Icon(Icons.delete_outline),
+                    label: const Text('Uninstall'),
+                  ),
+                ],
+                if (s.busy) ...[
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: LinearProgressIndicator(
+                      value: s.phase == Phase.installing ? null : s.progress,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (s.error != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+              child: Text(s.error!, style: TextStyle(color: theme.colorScheme.error)),
+            ),
+          PanelGroup(children: [
+            info('Installed', s.installed?.versionName ?? 'Not installed'),
+            info(
+              'Available',
+              s.pkg.versionName + (s.pkg.versionCode != null ? '  (${s.pkg.versionCode})' : ''),
+              strong: s.hasUpdate,
+            ),
+            info('Download size', formatBytes(s.pkg.sizeBytes)),
+            if (s.pkg.releasedAt != null) info('Released', formatDate(s.pkg.releasedAt)),
+            if (s.pkg.minSdk != null) info('Requires', 'Android API ${s.pkg.minSdk}+'),
+          ]),
+          const SizedBox(height: 12),
+          PanelGroup(children: [
+            ListTile(
+              title: const Text("What's new"),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  s.pkg.changelog.isEmpty ? 'No changelog for this version.' : s.pkg.changelog,
+                  style: muted?.copyWith(height: 1.5),
+                ),
+              ),
+            ),
+          ]),
+        ],
+      ),
+    );
+  }
+
+  // --- phones: a draggable bottom sheet --------------------------------------
+
+  Widget _sheet(BuildContext context) {
     final s = status;
     final theme = Theme.of(context);
     final muted = theme.colorScheme.onSurfaceVariant;
