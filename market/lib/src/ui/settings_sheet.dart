@@ -5,6 +5,7 @@ import '../config.g.dart';
 import '../installer/windows_installer.dart';
 import '../store_controller.dart';
 import 'format.dart';
+import 'theme.dart';
 
 Future<void> showSettingsSheet(BuildContext context, StoreController c) {
   return showModalBottomSheet<void>(
@@ -45,57 +46,75 @@ class _SettingsState extends State<_Settings> {
     final theme = Theme.of(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: 24),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-          child: Text('Settings', style: theme.textTheme.titleLarge),
-        ),
-        if (win != null) ..._windows(win),
-        if (c.android != null)
-          SwitchListTile(
-            title: const Text('Check for updates in the background'),
-            subtitle: const Text('Every few hours, with a notification when updates exist'),
-            value: _background ?? false,
-            onChanged: _background == null
-                ? null
-                : (v) async {
-                    await c.android!.setBackgroundCheck(v);
-                    setState(() => _background = v);
-                  },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+            child: Text('Settings', style: theme.textTheme.headlineSmall),
           ),
-        const Divider(height: 24),
-        ListTile(
-          dense: true,
-          title: const Text('Store version'),
-          trailing: Text(_version),
-        ),
-        ListTile(
-          dense: true,
-          title: const Text('Catalog'),
-          subtitle: Text(kCatalogBaseUrl),
-          trailing: Text(formatDate(c.catalog?.generatedAt)),
-        ),
-      ]),
+          _group(context, [
+            if (win != null) ..._windows(win),
+            if (c.android != null)
+              SwitchListTile(
+                title: const Text('Check for updates in the background'),
+                subtitle: const Text('Every few hours, with a notification when updates exist'),
+                value: _background ?? false,
+                onChanged: _background == null
+                    ? null
+                    : (v) async {
+                        await c.android!.setBackgroundCheck(v);
+                        setState(() => _background = v);
+                      },
+              ),
+          ]),
+          const SizedBox(height: 12),
+          _group(context, [
+            ListTile(dense: true, title: const Text('Store version'), trailing: Text(_version)),
+            ListTile(
+              dense: true,
+              title: const Text('Catalog'),
+              subtitle: Text(kCatalogBaseUrl),
+              trailing: Text(formatDate(c.catalog?.generatedAt)),
+            ),
+          ]),
+        ],
+      ),
+    );
+  }
+
+  /// A rounded panel of list tiles.
+  Widget _group(BuildContext context, List<Widget> tiles) {
+    if (tiles.isEmpty) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: panelDecoration(context, radius: 20),
+      clipBehavior: Clip.antiAlias,
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Material(
+        type: MaterialType.transparency,
+        child: Column(children: tiles),
+      ),
     );
   }
 
   List<Widget> _windows(WindowsSettings s) => [
-        SwitchListTile(
-          title: const Text('Start Menu shortcuts'),
-          value: s.startMenuShortcut,
-          onChanged: (v) => _set(s, 'startMenuShortcut', v),
-        ),
-        SwitchListTile(
-          title: const Text('Desktop shortcuts'),
-          value: s.desktopShortcut,
-          onChanged: (v) => _set(s, 'desktopShortcut', v),
-        ),
-        SwitchListTile(
-          title: const Text('Check for updates on startup'),
-          value: s.checkOnStartup,
-          onChanged: (v) => _set(s, 'checkOnStartup', v, refreshShortcuts: false),
-        ),
-      ];
+    SwitchListTile(
+      title: const Text('Start Menu shortcuts'),
+      value: s.startMenuShortcut,
+      onChanged: (v) => _set(s, 'startMenuShortcut', v),
+    ),
+    SwitchListTile(
+      title: const Text('Desktop shortcuts'),
+      value: s.desktopShortcut,
+      onChanged: (v) => _set(s, 'desktopShortcut', v),
+    ),
+    SwitchListTile(
+      title: const Text('Check for updates on startup'),
+      value: s.checkOnStartup,
+      onChanged: (v) => _set(s, 'checkOnStartup', v, refreshShortcuts: false),
+    ),
+  ];
 
   Future<void> _set(WindowsSettings s, String key, bool v, {bool refreshShortcuts = true}) async {
     await s.set(key, v);

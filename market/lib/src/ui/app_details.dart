@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../store_controller.dart';
 import 'app_card.dart';
 import 'format.dart';
+import 'theme.dart';
 
 Future<void> showAppDetails(BuildContext context, StoreController c, AppStatus s) {
   return showModalBottomSheet<void>(
@@ -40,24 +41,31 @@ class _Details extends StatelessWidget {
         controller: scroll,
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
         children: [
-          Row(children: [
-            AppIcon(url: s.app.icon, name: s.app.name, size: 64),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(s.app.name, style: theme.textTheme.headlineSmall),
-                Text(s.app.id, style: theme.textTheme.bodySmall?.copyWith(color: muted)),
-              ]),
-            ),
-          ]),
+          Row(
+            children: [
+              AppIcon(url: s.app.icon, name: s.app.name, size: 68),
+              const SizedBox(width: 18),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(s.app.name, style: theme.textTheme.headlineSmall),
+                    const SizedBox(height: 2),
+                    Text(s.app.id, style: theme.textTheme.bodySmall?.copyWith(color: muted)),
+                  ],
+                ),
+              ),
+            ],
+          ),
           if (s.app.description.isNotEmpty) ...[
             const SizedBox(height: 16),
-            Text(s.app.description, style: theme.textTheme.bodyMedium),
+            Text(s.app.description, style: theme.textTheme.bodyLarge?.copyWith(color: muted)),
           ],
           const SizedBox(height: 20),
           ActionButton(status: s, controller: controller, expanded: true),
           if (s.busy) ...[
             const SizedBox(height: 10),
+            const SizedBox(height: 4),
             LinearProgressIndicator(
               value: s.phase == Phase.installing ? null : s.progress,
               borderRadius: BorderRadius.circular(4),
@@ -79,33 +87,64 @@ class _Details extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 20),
-          _row(context, 'Installed', s.installed?.versionName ?? 'Not installed'),
-          _row(context, 'Available',
-              s.pkg.versionName + (s.pkg.versionCode != null ? '  (${s.pkg.versionCode})' : '')),
-          _row(context, 'Download size', formatBytes(s.pkg.sizeBytes)),
-          if (s.pkg.releasedAt != null) _row(context, 'Released', formatDate(s.pkg.releasedAt)),
-          if (s.pkg.minSdk != null) _row(context, 'Requires', 'Android API ${s.pkg.minSdk}+'),
+          Container(
+            decoration: panelDecoration(context, radius: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              children: [
+                _row(context, 'Installed', s.installed?.versionName ?? 'Not installed'),
+                _row(
+                  context,
+                  'Available',
+                  s.pkg.versionName + (s.pkg.versionCode != null ? '  (${s.pkg.versionCode})' : ''),
+                  strong: s.hasUpdate,
+                ),
+                _row(context, 'Download size', formatBytes(s.pkg.sizeBytes)),
+                if (s.pkg.releasedAt != null) _row(context, 'Released', formatDate(s.pkg.releasedAt)),
+                if (s.pkg.minSdk != null) _row(context, 'Requires', 'Android API ${s.pkg.minSdk}+'),
+              ],
+            ),
+          ),
           const SizedBox(height: 20),
-          Text("What's new", style: theme.textTheme.titleSmall),
-          const SizedBox(height: 6),
-          Text(s.pkg.changelog.isEmpty ? 'No changelog for this version.' : s.pkg.changelog,
-              style: theme.textTheme.bodyMedium?.copyWith(color: s.pkg.changelog.isEmpty ? muted : null)),
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Text("What's new", style: theme.textTheme.titleMedium),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            decoration: panelDecoration(context, radius: 20),
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              s.pkg.changelog.isEmpty ? 'No changelog for this version.' : s.pkg.changelog,
+              style: theme.textTheme.bodyMedium?.copyWith(color: s.pkg.changelog.isEmpty ? muted : null, height: 1.5),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _row(BuildContext context, String label, String value) {
+  Widget _row(BuildContext context, String label, String value, {bool strong = false}) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(children: [
-        SizedBox(
-          width: 130,
-          child: Text(label, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-        ),
-        Expanded(child: Text(value, style: theme.textTheme.bodyMedium)),
-      ]),
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 130,
+            child: Text(label, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: strong
+                  ? theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.primary, fontWeight: FontWeight.w700)
+                  : theme.textTheme.bodyMedium,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

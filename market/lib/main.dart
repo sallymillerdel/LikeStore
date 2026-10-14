@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'src/config.g.dart';
 import 'src/store_controller.dart';
 import 'src/ui/home_page.dart';
+import 'src/ui/theme.dart';
+import 'src/ui/window_frame.dart';
 
 Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initWindowFrame();
   final controller = await StoreController.create(args);
   runApp(LikeStoreApp(controller: controller));
   controller.start();
@@ -16,30 +19,13 @@ class LikeStoreApp extends StatelessWidget {
 
   final StoreController controller;
 
-  static const _seed = Color(0xFF4F46E5);
-
-  ThemeData _theme(Brightness b) {
-    final scheme = ColorScheme.fromSeed(seedColor: _seed, brightness: b);
-    return ThemeData(
-      colorScheme: scheme,
-      useMaterial3: true,
-      visualDensity: VisualDensity.standard,
-      cardTheme: CardThemeData(
-        elevation: 0,
-        color: scheme.surfaceContainerLow,
-        margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: kStoreName,
       debugShowCheckedModeBanner: false,
-      theme: _theme(Brightness.light),
-      darkTheme: _theme(Brightness.dark),
+      theme: buildTheme(Brightness.light),
+      darkTheme: buildTheme(Brightness.dark),
       home: HomePage(controller: controller),
     );
   }
