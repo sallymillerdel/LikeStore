@@ -2,5 +2,5 @@
 
 const String kStoreName = "LikeStore";
 const String kCatalogBaseUrl = "https://sallymillerdel.github.io/LikeStore/";
-const String kCatalogPublicKey = "";
+const String kCatalogPublicKey = "esJc6NWfrgbgQMnEKuoirUN6T+vLT2h/lIvV5PjdzEw=";
 const String kMarketAppId = "com.likestore.market";
