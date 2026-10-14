@@ -16,3 +16,6 @@ __pycache__/
 .venv/
 .idea/
 .vscode/
+
+# Installer output (market/build-installer.ps1).
+dist/

@@ -84,10 +84,14 @@ py scripts/publish.py publish
 
 ### 6. First install on each device
 
-* **Windows:** download `com.likestore.market-win-<version>.zip` from the repo's
-  Releases page, extract it somewhere permanent (for example
-  `%LocalAppData%\Programs\LikeStore`) and run `LikeStore.exe`. The store adds a Start
-  Menu shortcut. Its later self-updates go to `%LocalAppData%\LikeStore\apps\`.
+* **Windows:** run `LikeStore-Setup-<version>.exe` (no admin rights needed). Build it with
+  `powershell -ExecutionPolicy Bypass -File market\build-installer.ps1` (needs Inno Setup 6:
+  `winget install JRSoftware.InnoSetup`); it lands in `dist\`. It installs into
+  `%LocalAppData%\LikeStore\apps\com.likestore.market\<version>\`, the same place the
+  store's self-updates go, adds a Start Menu shortcut and an entry in *Installed apps*.
+  Uninstalling removes the store but keeps apps installed through it and its settings.
+  Without the installer: extract `com.likestore.market-win-<version>.zip` from the
+  Releases page somewhere permanent and run `LikeStore.exe`.
 * **Android:** open the Releases page on the phone, download the store APK, and allow
   "Install unknown apps" for the browser once. Inside the store, tap **Allow** when it asks
   to install apps.
