@@ -1,5 +1,36 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-14T14:26:40Z",
-  "apps": []
+  "generatedAt": "2026-10-14T16:55:35Z",
+  "apps": [
+    {
+      "id": "com.likestore.market",
+      "name": "LikeStore",
+      "description": "My app store",
+      "packages": {
+        "windows": {
+          "package": "zip",
+          "entry": "LikeStore.exe",
+          "versionName": "1.0.0",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-windows-1.0.0/com.likestore.market-win-1.0.0.zip",
+          "sha256": "1deecfa63dbc0b6801fa093455d4f6643589ca06f67335150df8008231ec7e3b",
+          "sizeBytes": 36404539,
+          "changelog": "",
+          "releasedAt": "2026-10-14T16:55:35Z"
+        },
+        "android": {
+          "package": "apk",
+          "packageName": "com.likestore.market",
+          "versionCode": 1,
+          "versionName": "1.0.0",
+          "minSdk": 24,
+          "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-android-1.0.0/com.likestore.market-android-1.0.0.apk",
+          "sha256": "d18c4386ec77a1026ca5619afca63e8489a19cbf80764beaf349ce03e2beeb49",
+          "sizeBytes": 31956458,
+          "changelog": "",
+          "releasedAt": "2026-10-14T16:55:35Z"
+        }
+      }
+    }
+  ]
 }
