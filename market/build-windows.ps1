@@ -7,20 +7,20 @@
 #   incoming\com.likestore.market-win-<version>.zip
 #   incoming\com.likestore.market-win-<version>.json
 #
-# <version> comes from pubspec.yaml (the part before "+"). Bump it before
-# publishing a new store version.
+# <version> is the part before "+" of "windows" in versions.json (the "+N"
+# part is the file version's build number). Bump it before publishing a new
+# store version.
 
 $ErrorActionPreference = 'Stop'
 
 $here     = $PSScriptRoot
 $incoming = Join-Path (Split-Path $here -Parent) 'incoming'
 $id       = (Get-Content (Join-Path (Split-Path $here -Parent) 'market.json') -Raw | ConvertFrom-Json).marketAppId
-$line     = Select-String -Path (Join-Path $here 'pubspec.yaml') -Pattern '^version:\s*([^\s+]+)' | Select-Object -First 1
-$version  = $line.Matches[0].Groups[1].Value
+$version, $build = (Get-Content (Join-Path $here 'versions.json') -Raw | ConvertFrom-Json).windows -split '\+'
 
 Push-Location $here
 try {
-    flutter build windows --release
+    flutter build windows --release --build-name $version --build-number $build
     if ($LASTEXITCODE -ne 0) { throw "flutter build windows failed" }
 } finally {
     Pop-Location

@@ -30,17 +30,16 @@ function Find-Iscc {
 
 $here    = $PSScriptRoot
 $dist    = Join-Path (Split-Path $here -Parent) 'dist'
-$line    = Select-String -Path (Join-Path $here 'pubspec.yaml') -Pattern '^version:\s*([^\s+]+)' | Select-Object -First 1
-$version = $line.Matches[0].Groups[1].Value
+$version, $build = (Get-Content (Join-Path $here 'versions.json') -Raw | ConvertFrom-Json).windows -split '\+'
 if ($version -notmatch '^\d+\.\d+\.\d+$') {
-    throw "pubspec.yaml version '$version' is not plain MAJOR.MINOR.PATCH (Windows file versions need numbers only)."
+    throw "versions.json windows version '$version' is not plain MAJOR.MINOR.PATCH (Windows file versions need numbers only)."
 }
 $iscc = Find-Iscc
 
 if (-not $NoBuild) {
     Push-Location $here
     try {
-        flutter build windows --release
+        flutter build windows --release --build-name $version --build-number $build
         if ($LASTEXITCODE -ne 0) { throw "flutter build windows failed" }
     } finally {
         Pop-Location

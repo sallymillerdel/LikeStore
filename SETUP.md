@@ -181,10 +181,11 @@ Then:
 
 The store is listed in its own catalog as `com.likestore.market`, so it can update itself.
 
-1. *(First time: optional; for later releases: required)* Set the version in
-   `market/pubspec.yaml`, e.g. `version: 1.0.0+1`. The part before `+` is the
-   version name (Windows uses it; it's also part of the release tag). The number after `+`
-   is the Android `versionCode`. Bump both for each new store release.
+1. *(First time: optional; for later releases: required)* Set the versions in
+   `market/versions.json`, one per platform, e.g. `"windows": "1.0.0+1"` and
+   `"android": "1.0.0+1"`. The part before `+` is the version name (it's also part of
+   the release tag). The number after `+` is the Android `versionCode`, or the build
+   part of the Windows file version (at most 65535). Bump the platforms you release.
 2. Build Windows (writes `incoming\com.likestore.market-win-<version>.zip` and `.json`):
    ```powershell
    powershell -ExecutionPolicy Bypass -File market\build-windows.ps1

@@ -8,8 +8,8 @@
 # Without ANDROID_KEYSTORE it refuses, unless -DebugKey is given: a store
 # signed with a debug key cannot later be updated by a release-signed one.
 #
-# versionCode is the "+N" part of `version:` in pubspec.yaml. Bump it (and the
-# version name) before publishing a new store version.
+# The version is "android" in versions.json, NAME+CODE: the "+N" part is the
+# versionCode. Bump both before publishing a new store version.
 
 param([switch]$DebugKey)
 
@@ -26,10 +26,11 @@ $env:ANDROID_SDK_ROOT = $env:ANDROID_HOME
 $here     = $PSScriptRoot
 $incoming = Join-Path (Split-Path $here -Parent) 'incoming'
 $id       = (Get-Content (Join-Path (Split-Path $here -Parent) 'market.json') -Raw | ConvertFrom-Json).marketAppId
+$name, $code = (Get-Content (Join-Path $here 'versions.json') -Raw | ConvertFrom-Json).android -split '\+'
 
 Push-Location $here
 try {
-    flutter build apk --release --target-platform android-arm,android-arm64
+    flutter build apk --release --target-platform android-arm,android-arm64 --build-name $name --build-number $code
     if ($LASTEXITCODE -ne 0) { throw "flutter build apk failed" }
 } finally {
     Pop-Location
