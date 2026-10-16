@@ -105,6 +105,11 @@ py scripts/publish.py publish
 2. Copy the files into the app's folder: `incoming/Classly/`, `incoming/Luma/`,
    `incoming/Whylist/` or `incoming/XReel/` (a new app just needs a new folder). The
    Windows `.zip` needs its `.json` next to it. Optionally add `icon.png` as the icon.
+   Each app's build script can do this step for you: build with `-ToStore` (Classly's
+   `build-portable.ps1` / `build-android.ps1`, Luma's `build-portable.ps1` / `build-apk.ps1`,
+   Whylist's `build_apk.ps1`, XReel's `build_portable.ps1`) and the result is copied into
+   `incoming/` after a successful build. XReel's lands in `incoming/` itself, the others in
+   their app folder.
 3. Tell Claude Code: *"Update the apps."* The script checks every folder, takes the newest
    build of each app and platform, and skips what's already published or older, so you can
    leave old files in a folder. Claude runs the dry run, shows you the plan, and publishes
@@ -147,7 +152,7 @@ py scripts/publish.py verify [--app <id>] [--quick] live catalog signature + eve
   publisher will stop and ask. Either change the id in XReel's portable build to
   `com.slx.xreel`, or publish the zip once with `--folder XReel --app-id com.slx.xreel`. After that, the
   catalog remembers the mapping.
-* **Whylist** and **XReel** don't have a portable-ZIP build script yet (Classly and Luma do).
+* **Whylist** is Android-only, so it has no portable ZIP.
 * Android apps must keep using the same keystore forever (see step 3).
 
 ---
