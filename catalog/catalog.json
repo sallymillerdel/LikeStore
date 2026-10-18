@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T22:34:50Z",
+  "generatedAt": "2026-10-18T22:58:40Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -41,25 +41,25 @@
         "windows": {
           "package": "zip",
           "entry": "LikeStore.exe",
-          "versionName": "1.0.6",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-windows-1.0.6/com.likestore.market-win-1.0.6.zip",
-          "sha256": "59294665c8b65bccc4df5a5c2a138327bdb71b93117c063785e9a7a28930ce1f",
-          "sizeBytes": 12356504,
-          "changelog": "",
-          "releasedAt": "2026-10-14T21:41:17Z"
+          "versionName": "1.0.7",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-windows-1.0.7/com.likestore.market-win-1.0.7.zip",
+          "sha256": "637210a8359aba789220b41ac0aec08b74df5d29526ea0dcecafab1bba275d9a",
+          "sizeBytes": 12356505,
+          "changelog": "the same as 1.0.6. Rebuild",
+          "releasedAt": "2026-10-18T22:58:40Z"
         },
         "android": {
           "package": "apk",
           "packageName": "com.likestore.market",
-          "versionCode": 10007,
-          "versionName": "1.0.7",
+          "versionCode": 10008,
+          "versionName": "1.0.8",
           "minSdk": 24,
           "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-android-1.0.7/com.likestore.market-android-1.0.7.apk",
-          "sha256": "2c1d1dd06f959367df8c0436fbfcec174191041e6cd7cdb66cfcd4d988c00c2b",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-android-1.0.8/com.likestore.market-android-1.0.8.apk",
+          "sha256": "8338b8589b38451c43d8e73dd3eb6014870552b9810c2348c14bd34d7002a62e",
           "sizeBytes": 31989161,
-          "changelog": "",
-          "releasedAt": "2026-10-14T21:41:17Z"
+          "changelog": "the same as 1.0.6. Rebuild",
+          "releasedAt": "2026-10-18T22:58:40Z"
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.likestore.market.png?v=26a81da73cf0"
