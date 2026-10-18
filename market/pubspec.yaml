@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # of the product and file versions while build-number is used as the build suffix.
 # Release builds (build-*.ps1) take their versions from versions.json instead,
 # one per platform; this one only applies to `flutter run` and ad-hoc builds.
-version: 1.0.7+10007
+version: 1.0.8+10008
 
 environment:
   sdk: ^3.12.2
