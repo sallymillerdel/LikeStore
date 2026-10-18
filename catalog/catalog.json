@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-14T21:41:17Z",
+  "generatedAt": "2026-10-18T22:34:50Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -10,25 +10,25 @@
         "android": {
           "package": "apk",
           "packageName": "com.classly.app",
-          "versionCode": 20402,
-          "versionName": "2.4.2",
+          "versionCode": 20403,
+          "versionName": "2.4.3",
           "minSdk": 24,
           "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.classly.app-android-2.4.2/com.classly.app-android-2.4.2.apk",
-          "sha256": "6e765ddba973e36ebcba377af0ed35cda59e8529dc2cd639d748ef9ae5a4e7d0",
-          "sizeBytes": 160694326,
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.classly.app-android-2.4.3/com.classly.app-android-2.4.3.apk",
+          "sha256": "3f2993b869616f30c1b3ad1fa8d41704f99a97a0db0cd28a8ef77b4bfcf48faa",
+          "sizeBytes": 160690702,
           "changelog": "",
-          "releasedAt": "2026-10-14T21:28:36Z"
+          "releasedAt": "2026-10-18T22:32:23Z"
         },
         "windows": {
           "package": "zip",
           "entry": "classly.exe",
-          "versionName": "2.4.1",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.classly.app-windows-2.4.1/com.classly.app-win-2.4.1.zip",
-          "sha256": "1702f3779d2a6a712e6905c9a78a350244fbddc91f6d298e7a94738c2c885d27",
-          "sizeBytes": 49791085,
+          "versionName": "2.4.2",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.classly.app-windows-2.4.2/com.classly.app-win-2.4.2.zip",
+          "sha256": "35e923154693e3f391c2376ba026380e51ed613a2fba0763fa5f71c198a3c8b0",
+          "sizeBytes": 49791078,
           "changelog": "",
-          "releasedAt": "2026-10-14T21:28:36Z"
+          "releasedAt": "2026-10-18T22:32:23Z"
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.classly.app.png?v=a5a1af4d755c"
@@ -72,26 +72,26 @@
         "android": {
           "package": "apk",
           "packageName": "app.luma.luma",
-          "versionCode": 20702,
-          "versionName": "2.7.2",
+          "versionCode": 20703,
+          "versionName": "2.7.3",
           "minSdk": 24,
           "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.luma.app-android-2.7.2/app.luma.luma-android-2.7.2.apk",
-          "sha256": "2a3fe6a73a083557ec932917d44c3cd2982275dae8b78cf931800c28da82bbe0",
-          "sizeBytes": 67044719,
-          "changelog": "",
-          "releasedAt": "2026-10-14T21:21:15Z"
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.luma.app-android-2.7.3/app.luma.luma-android-2.7.3.apk",
+          "sha256": "4b0275a8d4a8b2f4b99474e3995e47b419e20ea0cb4c6cb67c4a7d44b1ed1a5a",
+          "sizeBytes": 67044687,
+          "changelog": "Same app as 2.7.1, rebuilt",
+          "releasedAt": "2026-10-18T22:34:50Z"
         },
         "windows": {
           "package": "zip",
           "entry": "luma.exe",
-          "versionName": "2.7.1",
+          "versionName": "2.7.2",
           "sourceId": "app.luma.luma",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.luma.app-windows-2.7.1/com.luma.app-win-2.7.1.zip",
-          "sha256": "636c83b559e146dc20df254c267a7bb2ba32da9214ab4b9fb29fb3bb008ad49a",
-          "sizeBytes": 44911062,
-          "changelog": "",
-          "releasedAt": "2026-10-14T21:21:15Z"
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.luma.app-windows-2.7.2/com.luma.app-win-2.7.2.zip",
+          "sha256": "fb40237deb5fdc34e6cad04673754915b7974ee6929434add3557936845f79a2",
+          "sizeBytes": 44911070,
+          "changelog": "Same app as 2.7.1, rebuilt",
+          "releasedAt": "2026-10-18T22:34:50Z"
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.luma.app.png?v=c773785e76f4"
@@ -104,15 +104,15 @@
         "android": {
           "package": "apk",
           "packageName": "com.whylist.whylist",
-          "versionCode": 10201,
-          "versionName": "1.2.1",
+          "versionCode": 10202,
+          "versionName": "1.2.2",
           "minSdk": 26,
           "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.whylist.app-android-1.2.1/com.whylist.whylist-android-1.2.1.apk",
-          "sha256": "46c0b03c2cd83c672e45a6aa16c2fee4acf7ffb8c093ed056953f42fe12e4715",
-          "sizeBytes": 140931355,
-          "changelog": "",
-          "releasedAt": "2026-10-14T21:28:36Z"
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.whylist.app-android-1.2.2/com.whylist.whylist-android-1.2.2.apk",
+          "sha256": "fa80d3f4929fc96459fd7b7098ce5032d2b592886b095330ff27f064f1cffe33",
+          "sizeBytes": 140928979,
+          "changelog": "Same app as 1.2.1, rebuilt",
+          "releasedAt": "2026-10-18T22:32:41Z"
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.whylist.app.png?v=43d4fb175c7a"
