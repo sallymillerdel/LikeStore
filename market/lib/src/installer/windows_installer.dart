@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
@@ -16,14 +17,19 @@ import 'installer.dart';
 ///
 ///   installed.json                 id -> version, entry, folder
 ///   downloads\                     temporary downloads
-///   apps\<app-id>\<version>\       one folder per unpacked version
+///   apps\<app-id>\current\         the installed version of an app
+///   apps\com.likestore.market\<version>\   the store, one folder per version
 ///
 /// The apps folder can be moved: Setup may put the store elsewhere (apps then
 /// go next to it), and Settings can choose another folder for apps.
 ///
-/// An update unpacks into a new version folder, switches installed.json to it
-/// and only then removes the old folder; if anything fails before the switch,
-/// the old version is untouched. User data never lives in these folders.
+/// An update unpacks into a temporary folder, renames `current` aside, renames
+/// the new files to `current`, switches installed.json and only then deletes
+/// the old files; if anything fails before the switch, the old version is put
+/// back. The exe path never changes, so Start and taskbar pins keep working.
+/// The store cannot rename the folder it runs from, so it keeps version
+/// folders and repoints its shortcuts and pins instead. User data never lives
+/// in these folders.
 class WindowsInstaller implements PlatformInstaller {
   WindowsInstaller(this.storage, this.args);
 
@@ -97,7 +103,7 @@ class WindowsInstaller implements PlatformInstaller {
     }
     unawaited(_cleanupOldVersions());
     if (kReleaseMode) {
-      unawaited(_ensureOwnShortcut().then((_) => _migrateShortcutSettings()));
+      unawaited(_ensureOwnShortcut().then((_) => _migrateShortcutSettings()).then((_) => _repairAllShortcuts()));
       if (settings.startWithSystem) unawaited(_writeRunEntry(true));
     }
   }
@@ -148,17 +154,25 @@ class WindowsInstaller implements PlatformInstaller {
     final base = isSelf ? (_storeBaseDir ?? appsDir) : appsDir;
     final appDir = Directory(p.join(base, _safeName(app.id)));
     await appDir.create(recursive: true);
-    final target = Directory(p.join(appDir.path, _safeName(pkg.versionName)));
-    if (oldDir != null && p.equals(oldDir, target.path)) {
+    final target = Directory(versionDirFor(appDir.path, pkg.versionName, isSelf: isSelf));
+    if (oldDir != null &&
+        p.equals(oldDir, target.path) &&
+        old?['version'] == pkg.versionName &&
+        await File(p.join(oldDir, entry)).exists()) {
       throw InstallException('${app.name} ${pkg.versionName} is already installed.');
     }
-    if (await target.exists()) await target.delete(recursive: true); // left from a failed try
 
     final tmp = Directory(p.join(appDir.path, '.tmp-${DateTime.now().millisecondsSinceEpoch}'));
+    String? aside;
     try {
       final zipPath = file.path, tmpPath = tmp.path;
       final root = await Isolate.run(() => extractPortableZip(zipPath, tmpPath, entry));
-      await Directory(root).rename(target.path);
+      try {
+        aside = await moveIntoPlace(root, target.path);
+      } on FileSystemException catch (e) {
+        throw InstallException('Could not replace ${app.name}: ${e.osError?.message ?? e.message} '
+            'Close any program or Explorer window that uses its folder and try again.');
+      }
     } on ArchiveException catch (e) {
       throw InstallException('The download could not be unpacked: ${e.message}');
     } on FileSystemException catch (e) {
@@ -175,9 +189,23 @@ class WindowsInstaller implements PlatformInstaller {
       'dir': target.path,
       'installedAt': DateTime.now().toUtc().toIso8601String(),
     };
-    await storage.writeJson(_stateFile, state);
+    try {
+      await storage.writeJson(_stateFile, state);
+    } catch (_) {
+      // installed.json still names the old version: put its files back.
+      if (aside != null) await _restore(aside, target.path);
+      rethrow;
+    }
     await file.delete().catchError((_) => file);
-    await _writeShortcuts(app.name, p.join(target.path, entry));
+    final exe = p.join(target.path, entry);
+    await _writeShortcuts(app.name, exe);
+    // Pins and other shortcuts made from an older folder (a version folder of
+    // the old layout, the store's previous version, an earlier apps folder).
+    await _repairShortcuts([
+      (appDir.path, exe),
+      if (oldDir != null && !p.equals(p.dirname(oldDir), appDir.path)) (p.dirname(oldDir), exe),
+    ]);
+    if (aside != null) await _tryDelete(aside);
 
     if (isSelf) {
       // The running exe cannot replace itself, but the new version lives in its
@@ -186,7 +214,7 @@ class WindowsInstaller implements PlatformInstaller {
           workingDirectory: target.path, mode: ProcessStartMode.detached);
       return true;
     }
-    if (oldDir != null) {
+    if (oldDir != null && !p.equals(oldDir, target.path)) {
       await _tryDelete(oldDir);
       // Moved to a new apps folder: drop the old, now empty, app folder.
       final oldAppDir = Directory(p.dirname(oldDir));
@@ -252,6 +280,64 @@ class WindowsInstaller implements PlatformInstaller {
     throw ArchiveException('$entry was not found in the archive.');
   }
 
+  /// The folder a version is installed into. Apps always use
+  /// `<app-id>\current\`, so the exe path (which Windows uses to identify the
+  /// app in Start pins, taskbar pins and the icon cache) survives updates. The
+  /// store itself cannot move the folder it runs from and keeps one folder
+  /// per version.
+  @visibleForTesting
+  static String versionDirFor(String appDir, String version, {required bool isSelf}) =>
+      p.join(appDir, isSelf ? _safeName(version) : _currentDir);
+
+  static const _currentDir = 'current';
+
+  /// Renames [staged] to [target]. An existing [target] is first renamed
+  /// aside and put back if the second rename fails; returns the aside folder
+  /// (for the caller to delete), or null if [target] did not exist.
+  @visibleForTesting
+  static Future<String?> moveIntoPlace(String staged, String target) async {
+    final existing = Directory(target);
+    String? aside;
+    if (await existing.exists()) {
+      aside = p.join(p.dirname(target), '.old-${DateTime.now().microsecondsSinceEpoch}');
+      await existing.rename(aside);
+    }
+    try {
+      await Directory(staged).rename(target);
+    } catch (_) {
+      if (aside != null) await Directory(aside).rename(target);
+      rethrow;
+    }
+    return aside;
+  }
+
+  /// After a crash between the two renames of [moveIntoPlace], `current` is
+  /// missing and the installed version sits in a `.old-*` folder: puts the
+  /// newest such folder that still has [entry] back. Returns true if it did.
+  @visibleForTesting
+  static Future<bool> recoverAside(String appDir, String dir, String entry) async {
+    if (!p.equals(p.dirname(dir), appDir) || await Directory(dir).exists()) return false;
+    final candidates = <Directory>[
+      await for (final d in Directory(appDir).list())
+        if (d is Directory && p.basename(d.path).startsWith('.old-') && await File(p.join(d.path, entry)).exists()) d,
+    ]..sort((a, b) => b.path.compareTo(a.path));
+    if (candidates.isEmpty) return false;
+    try {
+      await candidates.first.rename(dir);
+      return true;
+    } on FileSystemException {
+      return false;
+    }
+  }
+
+  /// Undoes [moveIntoPlace]: the new files go away, the old ones come back.
+  Future<void> _restore(String aside, String target) async {
+    final failed = '$target.failed-${DateTime.now().microsecondsSinceEpoch}';
+    await Directory(target).rename(failed);
+    await Directory(aside).rename(target);
+    await _tryDelete(failed);
+  }
+
   Future<bool> _isRunningFrom(String dir) async {
     final prefix = dir.endsWith('\\') ? dir : '$dir\\';
     final r = await Process.run('powershell', [
@@ -296,6 +382,7 @@ class WindowsInstaller implements PlatformInstaller {
       final rec = records.where((r) => p.isWithin(appDir.path, r['dir'] as String)).firstOrNull;
       final isOwn = p.isWithin(appDir.path, ownDir);
       if (rec == null && !isOwn) continue; // not ours to judge
+      if (rec != null) await recoverAside(appDir.path, rec['dir'] as String, rec['entry'] as String);
       await for (final v in appDir.list()) {
         if (v is! Directory) continue;
         final keep = (rec != null &&
@@ -359,6 +446,82 @@ class WindowsInstaller implements PlatformInstaller {
   Future<void> _ensureOwnShortcut() async {
     final link = File(p.join(_startMenuDir, '$kStoreName.lnk'));
     if (!await link.exists()) await _writeShortcuts(kStoreName, Platform.resolvedExecutable);
+  }
+
+  /// Where shortcuts to the store's apps can be, as (folder, recursive):
+  /// the Start Menu, the Desktop, and the copies Windows keeps for taskbar
+  /// and Start pins (`Quick Launch\User Pinned\...`).
+  Future<List<(String, bool)>> _shortcutFolders() async => [
+        (_startMenuDir, true),
+        (await _desktop(), false),
+        (p.join(Platform.environment['APPDATA'] ?? '', 'Microsoft', 'Internet Explorer', 'Quick Launch'), true),
+      ];
+
+  /// Points every shortcut whose target is the same exe in an older folder
+  /// under one of the given app folders at the current exe.
+  Future<void> _repairShortcuts(List<(String appDir, String exe)> fixes) async {
+    try {
+      await repairShortcutsIn(await _shortcutFolders(), fixes);
+    } catch (_) {
+      // Cosmetic: never fail an install over a shortcut.
+    }
+  }
+
+  /// Startup pass: repairs shortcuts left pointing at deleted versions (by
+  /// older store versions, and by the store's own self-updates).
+  Future<void> _repairAllShortcuts() async {
+    final state = await _readState();
+    await _repairShortcuts([
+      for (final rec in (state['apps'] as Map<String, dynamic>).values.cast<Map<String, dynamic>>())
+        if (rec['dir'] is String && rec['entry'] is String)
+          (p.dirname(rec['dir'] as String), p.join(rec['dir'] as String, rec['entry'] as String)),
+      if (_storeBaseDir != null) (p.dirname(p.dirname(Platform.resolvedExecutable)), Platform.resolvedExecutable),
+    ]);
+  }
+
+  /// Rewrites the `.lnk` files in [folders] (path, recursive) whose target has
+  /// the file name of a fix's exe and lies under its app folder, but is not
+  /// that exe. Tells Explorer about each one so the icon refreshes. Returns
+  /// the shortcuts that were changed.
+  @visibleForTesting
+  static Future<List<String>> repairShortcutsIn(
+      List<(String, bool)> folders, List<(String appDir, String exe)> fixes) async {
+    if (fixes.isEmpty) return const [];
+    String prefix(String dir) => dir.endsWith('\\') ? dir : '$dir\\';
+    final script = StringBuffer()
+      ..writeln(r'$w = New-Object -ComObject WScript.Shell; $changed = @(); $fixes = @(); $folders = @()')
+      // `+= ,@(...)` keeps each pair an array of its own.
+      ..writeAll(fixes.map((f) => '\$fixes += ,@(${_psQuote(prefix(f.$1))}, ${_psQuote(f.$2)})\n'))
+      ..writeAll(folders.map((f) => '\$folders += ,@(${_psQuote(f.$1)}, \$${f.$2})\n'))
+      ..write(r'''
+foreach ($d in $folders) {
+  if (-not $d[0] -or -not (Test-Path -LiteralPath $d[0])) { continue }
+  foreach ($f in Get-ChildItem -LiteralPath $d[0] -Filter *.lnk -File -Recurse:$d[1] -ErrorAction SilentlyContinue) {
+    $s = $w.CreateShortcut($f.FullName); $t = $s.TargetPath
+    if (-not $t) { continue }
+    foreach ($x in $fixes) {
+      if ($t.StartsWith($x[0], [StringComparison]::OrdinalIgnoreCase) -and $t -ne $x[1] -and
+          [IO.Path]::GetFileName($t) -eq [IO.Path]::GetFileName($x[1])) {
+        $s.TargetPath = $x[1]; $s.WorkingDirectory = [IO.Path]::GetDirectoryName($x[1])
+        if ($s.IconLocation.StartsWith($x[0], [StringComparison]::OrdinalIgnoreCase)) { $s.IconLocation = $x[1] + ',0' }
+        $s.Save(); $changed += $f.FullName; break
+      }
+    }
+  }
+}
+if ($changed) {
+  Add-Type -Namespace LikeStore -Name Shell -MemberDefinition '[DllImport("shell32.dll", CharSet = CharSet.Unicode)] public static extern void SHChangeNotify(int e, int f, string a, IntPtr b);'
+  foreach ($c in $changed) { [LikeStore.Shell]::SHChangeNotify(0x2000, 0x5, $c, [IntPtr]::Zero) }
+}
+$changed
+''');
+    // Encoded, so quotes and newlines need no command-line escaping.
+    final encoded = base64.encode([
+      for (final u in script.toString().codeUnits) ...[u & 0xff, u >> 8], // UTF-16LE
+    ]);
+    final r = await Process.run('powershell', ['-NoProfile', '-NonInteractive', '-EncodedCommand', encoded]);
+    if (r.exitCode != 0) throw ProcessException('powershell', const [], (r.stderr as String).trim(), r.exitCode);
+    return const LineSplitter().convert(r.stdout as String).where((l) => l.trim().isNotEmpty).toList();
   }
 
   /// Once, after the shortcut settings were dropped: re-creates every

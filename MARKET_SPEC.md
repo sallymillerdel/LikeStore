@@ -179,7 +179,7 @@ The installers remain available for manual installs outside the market. Each app
 
 - Fetch and verify the catalog.
 - List Windows apps with state button: **Install / Update / Open / Up to date**.
-- Download zip, verify SHA-256, unpack, switch to the new version, create/refresh a Start Menu or Desktop shortcut (optional, per user setting), launch.
+- Download zip, verify SHA-256, unpack, switch to the new version, create/refresh the Start Menu shortcut and repoint existing pins, launch.
 - Uninstall (delete app folder, remove shortcut, optionally keep user data).
 - "Check for updates" and optional check on startup.
 
@@ -190,21 +190,29 @@ The installers remain available for manual installs outside the market. Each app
 ├── installed.json                 local state: id, installed version, entry, path
 ├── downloads\                     temporary downloads
 └── apps\
-    └── <app-id>\
-        ├── 1.4.0\                 unpacked version folders
-        └── 1.5.0\
+    ├── <app-id>\
+    │   └── current\               the installed version (fixed name)
+    └── <market-id>\
+        ├── 1.0.7\                 the market itself: one folder per version
+        └── 1.0.8\
 ```
 
 User data must never live in these folders. Apps store data in `%AppData%` / `%LocalAppData%` under their own names, so replacing a version folder never deletes user data.
 
+**Why `current\`:** Windows identifies a desktop app by its exe path. Start pins use it as the app ID, and taskbar pins and the icon cache are tied to it. A path with the version in it changes on every update, and the old pins go blank. A fixed `current\` folder keeps the path the same. The market cannot rename the folder it is running from, so it keeps one folder per version. After each self-update it repoints its own shortcuts and taskbar pins (see below). Its Start pin still changes ID on every self-update.
+
+Installs from market versions before this layout used `apps\<id>\<version>\`. They move to `current\` on their next update. That update repoints taskbar pins and shortcuts. Start pins made before the move have to be re-pinned once.
+
 ### Update procedure
 
 1. Download the zip into `downloads\` and verify SHA-256.
-2. Unpack into a **new** folder `apps\<id>\<new-version>\` (never over the running version).
-3. If the app is running, ask the user to close it (detect by process path under the app folder). Do not kill processes silently.
-4. Set the current version in `installed.json` to the new one and refresh the shortcut.
-5. Delete the old version folder once the new one has launched successfully (or on next market start if files are locked).
-6. If anything fails, keep the old version intact (rollback is simply not switching).
+2. If the app is running, ask the user to close it (detect by process path under the app folder). Do not kill processes silently.
+3. Unpack into a temporary folder `apps\<id>\.tmp-*\` (never over the running version).
+4. Rename `current\` to `.old-*\`, then rename the unpacked folder to `current\`. If the second rename fails, rename `.old-*\` back. For the market, rename the unpacked folder to `<new-version>\` instead.
+5. Set the current version in `installed.json` to the new one. If that write fails, put the old files back in `current\`.
+6. Refresh the Start Menu shortcut. Then repoint every other shortcut to the same exe in an older folder of the app: the Desktop, and the pin copies under `%AppData%\Microsoft\Internet Explorer\Quick Launch\User Pinned\`. Then notify Explorer (`SHChangeNotify`) so the icon refreshes. The market also runs this repair at startup.
+7. Delete `.old-*\` (and, for the market, the old version folder once the new one has started). Locked files are retried on the next market start. That start also restores `.old-*\` to `current\` if a crash happened between the two renames.
+8. If anything fails before step 5, the old version stays installed.
 
 ### Technical points
 

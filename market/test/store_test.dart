@@ -206,4 +206,123 @@ void main() {
           throwsA(isA<ArchiveException>()));
     });
   });
+
+  group('install layout', () {
+    late Directory dir;
+    setUp(() => dir = Directory.systemTemp.createTempSync('likestore_layout'));
+    tearDown(() => dir.deleteSync(recursive: true));
+
+    String folder(String name, Map<String, String> files) {
+      final d = p.join(dir.path, name);
+      files.forEach((f, content) => (File(p.join(d, f))..createSync(recursive: true)).writeAsStringSync(content));
+      return d;
+    }
+
+    test('apps keep one fixed folder, the store one per version', () {
+      final appDir = p.join('D:', 'Apps', 'com.classly.app');
+      expect(WindowsInstaller.versionDirFor(appDir, '2.4.1', isSelf: false), p.join(appDir, 'current'));
+      expect(WindowsInstaller.versionDirFor(appDir, '2.4.2', isSelf: false), p.join(appDir, 'current'));
+      expect(WindowsInstaller.versionDirFor(appDir, '1.0.8', isSelf: true), p.join(appDir, '1.0.8'));
+    });
+
+    test('first install moves the files into place', () async {
+      final staged = folder('.tmp-1', {'Notes.exe': 'new'});
+      final target = p.join(dir.path, 'current');
+      expect(await WindowsInstaller.moveIntoPlace(staged, target), isNull);
+      expect(File(p.join(target, 'Notes.exe')).readAsStringSync(), 'new');
+      expect(Directory(staged).existsSync(), isFalse);
+    });
+
+    test('an update replaces current and hands back the old files', () async {
+      final target = folder('current', {'Notes.exe': 'old'});
+      final staged = folder('.tmp-1', {'Notes.exe': 'new'});
+      final aside = await WindowsInstaller.moveIntoPlace(staged, target);
+      expect(File(p.join(target, 'Notes.exe')).readAsStringSync(), 'new');
+      expect(p.basename(aside!), startsWith('.old-'));
+      expect(File(p.join(aside, 'Notes.exe')).readAsStringSync(), 'old');
+    });
+
+    test('a failed swap puts the old version back', () async {
+      final target = folder('current', {'Notes.exe': 'old'});
+      await expectLater(WindowsInstaller.moveIntoPlace(p.join(dir.path, 'missing'), target),
+          throwsA(isA<FileSystemException>()));
+      expect(File(p.join(target, 'Notes.exe')).readAsStringSync(), 'old');
+      expect(dir.listSync().map((e) => p.basename(e.path)), ['current']);
+    });
+
+    test('a crash between the renames is recovered on the next start', () async {
+      folder('.old-100', {'Notes.exe': 'older'});
+      folder('.old-200', {'Notes.exe': 'old'});
+      folder('.old-300', {'other.txt': 'no entry'});
+      final current = p.join(dir.path, 'current');
+      expect(await WindowsInstaller.recoverAside(dir.path, current, 'Notes.exe'), isTrue);
+      expect(File(p.join(current, 'Notes.exe')).readAsStringSync(), 'old');
+      // Nothing to do once current exists.
+      expect(await WindowsInstaller.recoverAside(dir.path, current, 'Notes.exe'), isFalse);
+    });
+  });
+
+  group('shortcut repair', () {
+    late Directory dir;
+    setUp(() => dir = Directory.systemTemp.createTempSync('likestore_lnk'));
+    tearDown(() => dir.deleteSync(recursive: true));
+
+    String ps(String s) => "'${s.replaceAll("'", "''")}'";
+
+    Future<void> makeLink(String link, String target) async {
+      final r = await Process.run('powershell', [
+        '-NoProfile', '-NonInteractive', '-Command',
+        '\$s = (New-Object -ComObject WScript.Shell).CreateShortcut(${ps(link)}); '
+            '\$s.TargetPath = ${ps(target)}; \$s.IconLocation = ${ps('$target,0')}; \$s.Save()',
+      ]);
+      expect(r.exitCode, 0, reason: r.stderr as String);
+    }
+
+    Future<String> targetOf(String link) async {
+      final r = await Process.run('powershell', [
+        '-NoProfile', '-NonInteractive', '-Command',
+        '(New-Object -ComObject WScript.Shell).CreateShortcut(${ps(link)}).TargetPath',
+      ]);
+      return (r.stdout as String).trim();
+    }
+
+    test('repoints pins at older versions and leaves the rest alone', () async {
+      final appDir = p.join(dir.path, 'Apps', 'com.classly.app');
+      String exe(String version, [String name = 'classly.exe']) {
+        final path = p.join(appDir, version, name);
+        File(path).createSync(recursive: true);
+        return path;
+      }
+
+      final current = exe('current');
+      final pins = p.join(dir.path, 'User Pinned', 'TaskBar');
+      final desktop = p.join(dir.path, 'Desktop');
+      Directory(pins).createSync(recursive: true);
+      Directory(p.join(desktop, 'Sub')).createSync(recursive: true);
+      final pinned = p.join(pins, 'Classly.lnk');
+      final onDesktop = p.join(desktop, 'Classly.lnk');
+      final helper = p.join(pins, 'Helper.lnk');
+      final nested = p.join(desktop, 'Sub', 'Classly.lnk');
+      final upToDate = p.join(pins, 'Current.lnk');
+      await makeLink(pinned, exe('2.4.1'));
+      await makeLink(onDesktop, exe('2.4.0'));
+      await makeLink(helper, exe('2.4.1', 'helper.exe'));
+      await makeLink(nested, exe('2.4.1'));
+      await makeLink(upToDate, current);
+
+      final changed = await WindowsInstaller.repairShortcutsIn(
+          [(p.join(dir.path, 'User Pinned'), true), (desktop, false)], [(appDir, current)]);
+
+      expect(changed.map((c) => p.normalize(c).toLowerCase()).toSet(),
+          {pinned, onDesktop}.map((c) => p.normalize(c).toLowerCase()).toSet());
+      expect(await targetOf(pinned), current);
+      expect(await targetOf(onDesktop), current);
+      expect(await targetOf(helper), p.join(appDir, '2.4.1', 'helper.exe')); // other exe
+      expect(await targetOf(nested), p.join(appDir, '2.4.1', 'classly.exe')); // Desktop is not recursive
+    }, testOn: 'windows', timeout: const Timeout(Duration(minutes: 1)));
+
+    test('nothing to repair runs nothing', () async {
+      expect(await WindowsInstaller.repairShortcutsIn([(dir.path, true)], const []), isEmpty);
+    });
+  });
 }
