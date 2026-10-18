@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T22:32:23Z",
+  "generatedAt": "2026-10-18T22:32:41Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -104,15 +104,15 @@
         "android": {
           "package": "apk",
           "packageName": "com.whylist.whylist",
-          "versionCode": 10201,
-          "versionName": "1.2.1",
+          "versionCode": 10202,
+          "versionName": "1.2.2",
           "minSdk": 26,
           "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.whylist.app-android-1.2.1/com.whylist.whylist-android-1.2.1.apk",
-          "sha256": "46c0b03c2cd83c672e45a6aa16c2fee4acf7ffb8c093ed056953f42fe12e4715",
-          "sizeBytes": 140931355,
-          "changelog": "",
-          "releasedAt": "2026-10-14T21:28:36Z"
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.whylist.app-android-1.2.2/com.whylist.whylist-android-1.2.2.apk",
+          "sha256": "fa80d3f4929fc96459fd7b7098ce5032d2b592886b095330ff27f064f1cffe33",
+          "sizeBytes": 140928979,
+          "changelog": "Same app as 1.2.1, rebuilt",
+          "releasedAt": "2026-10-18T22:32:41Z"
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.whylist.app.png?v=43d4fb175c7a"
