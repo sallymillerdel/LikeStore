@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-14T21:41:17Z",
+  "generatedAt": "2026-10-18T22:32:23Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -10,25 +10,25 @@
         "android": {
           "package": "apk",
           "packageName": "com.classly.app",
-          "versionCode": 20402,
-          "versionName": "2.4.2",
+          "versionCode": 20403,
+          "versionName": "2.4.3",
           "minSdk": 24,
           "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.classly.app-android-2.4.2/com.classly.app-android-2.4.2.apk",
-          "sha256": "6e765ddba973e36ebcba377af0ed35cda59e8529dc2cd639d748ef9ae5a4e7d0",
-          "sizeBytes": 160694326,
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.classly.app-android-2.4.3/com.classly.app-android-2.4.3.apk",
+          "sha256": "3f2993b869616f30c1b3ad1fa8d41704f99a97a0db0cd28a8ef77b4bfcf48faa",
+          "sizeBytes": 160690702,
           "changelog": "",
-          "releasedAt": "2026-10-14T21:28:36Z"
+          "releasedAt": "2026-10-18T22:32:23Z"
         },
         "windows": {
           "package": "zip",
           "entry": "classly.exe",
-          "versionName": "2.4.1",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.classly.app-windows-2.4.1/com.classly.app-win-2.4.1.zip",
-          "sha256": "1702f3779d2a6a712e6905c9a78a350244fbddc91f6d298e7a94738c2c885d27",
-          "sizeBytes": 49791085,
+          "versionName": "2.4.2",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.classly.app-windows-2.4.2/com.classly.app-win-2.4.2.zip",
+          "sha256": "35e923154693e3f391c2376ba026380e51ed613a2fba0763fa5f71c198a3c8b0",
+          "sizeBytes": 49791078,
           "changelog": "",
-          "releasedAt": "2026-10-14T21:28:36Z"
+          "releasedAt": "2026-10-18T22:32:23Z"
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.classly.app.png?v=a5a1af4d755c"
