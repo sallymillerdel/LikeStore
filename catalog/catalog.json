@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T22:58:40Z",
+  "generatedAt": "2026-10-18T23:13:36Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -41,12 +41,12 @@
         "windows": {
           "package": "zip",
           "entry": "LikeStore.exe",
-          "versionName": "1.0.7",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-windows-1.0.7/com.likestore.market-win-1.0.7.zip",
-          "sha256": "637210a8359aba789220b41ac0aec08b74df5d29526ea0dcecafab1bba275d9a",
-          "sizeBytes": 12356505,
-          "changelog": "the same as 1.0.6. Rebuild",
-          "releasedAt": "2026-10-18T22:58:40Z"
+          "versionName": "1.0.8",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-windows-1.0.8/com.likestore.market-win-1.0.8.zip",
+          "sha256": "c58cd80d64328624ce028bef2e05e532468bca28ca57e08c001493c9e6e88c8c",
+          "sizeBytes": 12364352,
+          "changelog": "Fixes app icons going blank in the Start menu and on the taskbar after an update. Apps now install into a fixed folder, and existing shortcuts and taskbar pins are repointed automatically.",
+          "releasedAt": "2026-10-18T23:13:36Z"
         },
         "android": {
           "package": "apk",
