@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T22:32:41Z",
+  "generatedAt": "2026-10-18T22:34:50Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -72,26 +72,26 @@
         "android": {
           "package": "apk",
           "packageName": "app.luma.luma",
-          "versionCode": 20702,
-          "versionName": "2.7.2",
+          "versionCode": 20703,
+          "versionName": "2.7.3",
           "minSdk": 24,
           "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.luma.app-android-2.7.2/app.luma.luma-android-2.7.2.apk",
-          "sha256": "2a3fe6a73a083557ec932917d44c3cd2982275dae8b78cf931800c28da82bbe0",
-          "sizeBytes": 67044719,
-          "changelog": "",
-          "releasedAt": "2026-10-14T21:21:15Z"
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.luma.app-android-2.7.3/app.luma.luma-android-2.7.3.apk",
+          "sha256": "4b0275a8d4a8b2f4b99474e3995e47b419e20ea0cb4c6cb67c4a7d44b1ed1a5a",
+          "sizeBytes": 67044687,
+          "changelog": "Same app as 2.7.1, rebuilt",
+          "releasedAt": "2026-10-18T22:34:50Z"
         },
         "windows": {
           "package": "zip",
           "entry": "luma.exe",
-          "versionName": "2.7.1",
+          "versionName": "2.7.2",
           "sourceId": "app.luma.luma",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.luma.app-windows-2.7.1/com.luma.app-win-2.7.1.zip",
-          "sha256": "636c83b559e146dc20df254c267a7bb2ba32da9214ab4b9fb29fb3bb008ad49a",
-          "sizeBytes": 44911062,
-          "changelog": "",
-          "releasedAt": "2026-10-14T21:21:15Z"
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.luma.app-windows-2.7.2/com.luma.app-win-2.7.2.zip",
+          "sha256": "fb40237deb5fdc34e6cad04673754915b7974ee6929434add3557936845f79a2",
+          "sizeBytes": 44911070,
+          "changelog": "Same app as 2.7.1, rebuilt",
+          "releasedAt": "2026-10-18T22:34:50Z"
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.luma.app.png?v=c773785e76f4"
