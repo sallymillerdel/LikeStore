@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-18T23:13:36Z",
+  "generatedAt": "2026-11-04T01:06:08Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -134,6 +134,37 @@
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.xreel.app.png?v=e232f422ee5c"
+    },
+    {
+      "id": "com.zipper.app",
+      "name": "Zipper",
+      "description": "Download a Telegram sticker pack as a ZIP of the original files.",
+      "packages": {
+        "android": {
+          "package": "apk",
+          "packageName": "com.zipper.app",
+          "versionCode": 1,
+          "versionName": "1.0.0",
+          "minSdk": 24,
+          "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.zipper.app-android-1.0.0/com.zipper.app-android-1.0.0.apk",
+          "sha256": "6789e9ceb4b667850e524a5fabf32a626047b6ecb19dd97fb733339390537267",
+          "sizeBytes": 152996825,
+          "changelog": "First release",
+          "releasedAt": "2026-11-04T01:06:08Z"
+        },
+        "windows": {
+          "package": "zip",
+          "entry": "zipper.exe",
+          "versionName": "1.0.0",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.zipper.app-windows-1.0.0/com.zipper.app-win-1.0.0.zip",
+          "sha256": "a31acec46e4d1c5e6411794671d4627c4ed2692fef7a6140dccd2119a09c0ada",
+          "sizeBytes": 49159594,
+          "changelog": "First release",
+          "releasedAt": "2026-11-04T01:06:08Z"
+        }
+      },
+      "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.zipper.app.png?v=f30fbeaa0a16"
     }
   ]
 }
