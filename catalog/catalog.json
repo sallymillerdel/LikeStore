@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-04T01:06:08Z",
+  "generatedAt": "2026-11-04T01:47:43Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -125,12 +125,25 @@
         "windows": {
           "package": "zip",
           "entry": "XReel.exe",
-          "versionName": "1.8.4",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.xreel.app-windows-1.8.4/com.xreel.app-win-1.8.4.zip",
-          "sha256": "06e03af2464ab979cead58e140c98c3e082aced178b294b667c1dc609e2ecb78",
-          "sizeBytes": 228516389,
+          "versionName": "1.9.1",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.xreel.app-windows-1.9.1/com.xreel.app-win-1.9.1.zip",
+          "sha256": "ec02a008b40cd63e0a1af61074bd41fd9ab67991c6f09c641219765563ce8d1c",
+          "sizeBytes": 228702948,
           "changelog": "",
-          "releasedAt": "2026-10-14T21:17:07Z"
+          "releasedAt": "2026-11-04T01:47:43Z"
+        },
+        "android": {
+          "package": "apk",
+          "packageName": "com.xreel.app",
+          "versionCode": 4,
+          "versionName": "1.9.1",
+          "minSdk": 24,
+          "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.xreel.app-android-1.9.1/com.xreel.app-android-1.9.1.apk",
+          "sha256": "3f28d19ced37f8bf99874b23dde7b64dc7446f0fc188ea902f05c9e3f79bc7d9",
+          "sizeBytes": 70509010,
+          "changelog": "",
+          "releasedAt": "2026-11-04T01:47:43Z"
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.xreel.app.png?v=e232f422ee5c"
