@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-04T01:47:43Z",
+  "generatedAt": "2026-11-05T14:42:50Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -125,12 +125,12 @@
         "windows": {
           "package": "zip",
           "entry": "XReel.exe",
-          "versionName": "1.9.1",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.xreel.app-windows-1.9.1/com.xreel.app-win-1.9.1.zip",
-          "sha256": "ec02a008b40cd63e0a1af61074bd41fd9ab67991c6f09c641219765563ce8d1c",
-          "sizeBytes": 228702948,
-          "changelog": "",
-          "releasedAt": "2026-11-04T01:47:43Z"
+          "versionName": "1.9.2",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.xreel.app-windows-1.9.2/com.xreel.app-win-1.9.2.zip",
+          "sha256": "8911dd99a9fba8c078cad97824c717782cee81595af967db214c54f2deea4847",
+          "sizeBytes": 228710402,
+          "changelog": "Custom topic search finds 1–5 topics with their own time spans; more accurate transcription (large-v3-turbo).",
+          "releasedAt": "2026-11-05T14:42:50Z"
         },
         "android": {
           "package": "apk",
