@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-05T14:42:50Z",
+  "generatedAt": "2026-11-05T15:08:07Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -135,15 +135,15 @@
         "android": {
           "package": "apk",
           "packageName": "com.xreel.app",
-          "versionCode": 4,
-          "versionName": "1.9.1",
+          "versionCode": 5,
+          "versionName": "1.9.2",
           "minSdk": 24,
           "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.xreel.app-android-1.9.1/com.xreel.app-android-1.9.1.apk",
-          "sha256": "3f28d19ced37f8bf99874b23dde7b64dc7446f0fc188ea902f05c9e3f79bc7d9",
-          "sizeBytes": 70509010,
-          "changelog": "",
-          "releasedAt": "2026-11-04T01:47:43Z"
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.xreel.app-android-1.9.2/com.xreel.app-android-1.9.2.apk",
+          "sha256": "c318efa6a63f382ddcef139fcd857dedb116ca2d0a1bae5dc97b1007f201bb49",
+          "sizeBytes": 70600910,
+          "changelog": "Custom topic search finds 1–5 topics with their own time spans; more accurate transcription (large-v3-turbo).",
+          "releasedAt": "2026-11-05T15:08:07Z"
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.xreel.app.png?v=e232f422ee5c"
