@@ -15,23 +15,18 @@ class AppCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = status;
     final theme = Theme.of(context);
-    final x = StoreColors.of(context);
-    final muted = theme.colorScheme.onSurfaceVariant;
-    final highlight = s.hasUpdate;
+    final radius = BorderRadius.circular(16);
 
     return DecoratedBox(
-      decoration: panelDecoration(
-        context,
-        color: highlight ? x.updateCard : null,
-        border: highlight ? x.updateCardBorder : null,
-      ),
+      decoration: panelDecoration(context),
       child: Material(
         type: MaterialType.transparency,
+        borderRadius: radius,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: radius,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(18, 16, 16, 14),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -43,30 +38,25 @@ class AppCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            s.app.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleMedium?.copyWith(fontSize: 17),
-                          ),
-                          const SizedBox(height: 2),
+                          Text(s.app.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: theme.textTheme.titleMedium),
+                          const SizedBox(height: 4),
                           Text(
                             s.app.description.isEmpty ? s.app.id : s.app.description,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodyMedium?.copyWith(color: muted),
+                            style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 16),
                     ActionButton(status: s, controller: controller),
                   ],
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 16),
                 // The home grid stretches cards in a row to the same height.
                 const Spacer(),
-                Divider(color: highlight ? x.updateCardBorder : null),
+                const Divider(),
                 const SizedBox(height: 12),
                 _Footer(status: s),
               ],
@@ -88,23 +78,26 @@ class _Footer extends StatelessWidget {
     final s = status;
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final small = theme.textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant);
+    final small = theme.textTheme.bodySmall?.copyWith(fontFeatures: kTabular);
 
     if (s.busy) {
       final label = s.phase == Phase.installing
-          ? 'Installing...'
+          ? 'Installing'
           : '${formatBytes(s.received)} of ${formatBytes(s.total)}';
-      return Row(
-        children: [
-          Expanded(
-            child: LinearProgressIndicator(
-              value: s.phase == Phase.installing ? null : s.progress,
-              borderRadius: BorderRadius.circular(8),
+      return SizedBox(
+        height: 18,
+        child: Row(
+          children: [
+            Expanded(
+              child: LinearProgressIndicator(
+                value: s.phase == Phase.installing ? null : s.progress,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Text(label, style: small),
-        ],
+            const SizedBox(width: 16),
+            Text(label, style: small),
+          ],
+        ),
       );
     }
     if (s.error != null) {
@@ -113,7 +106,7 @@ class _Footer extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 1),
-            child: Icon(Icons.error_outline, size: 18, color: scheme.error),
+            child: Icon(Icons.error_outline, size: 16, color: scheme.error),
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -121,7 +114,7 @@ class _Footer extends StatelessWidget {
               s.error!,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: small?.copyWith(color: scheme.error, fontWeight: FontWeight.w500),
+              style: small?.copyWith(color: scheme.error),
             ),
           ),
         ],
@@ -129,22 +122,15 @@ class _Footer extends StatelessWidget {
     }
     final installed = s.installed;
     if (installed != null && s.hasUpdate) {
-      return Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(text: '${installed.versionName} → '),
-            TextSpan(
-              text: s.pkg.versionName,
-              style: TextStyle(color: scheme.primary, fontWeight: FontWeight.w700),
-            ),
-            TextSpan(text: ' · ${formatBytes(s.pkg.sizeBytes)}'),
-          ],
-        ),
-        style: small,
+      return Row(
+        children: [
+          Flexible(child: VersionStep(from: installed.versionName, to: s.pkg.versionName)),
+          Text('  ·  ${formatBytes(s.pkg.sizeBytes)}', style: small),
+        ],
       );
     }
     final text = installed == null
-        ? '${s.pkg.versionName} · ${formatBytes(s.pkg.sizeBytes)}'
+        ? '${s.pkg.versionName}  ·  ${formatBytes(s.pkg.sizeBytes)}'
         : 'Installed ${installed.versionName}';
     return Text(text, style: small);
   }
@@ -162,14 +148,15 @@ class ActionButton extends StatelessWidget {
     final s = status;
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final x = StoreColors.of(context);
     Widget button;
     if (s.busy) {
       button = FilledButton.tonal(
         onPressed: null,
         style: FilledButton.styleFrom(
-          disabledBackgroundColor: scheme.secondaryContainer,
+          disabledBackgroundColor: x.raised,
           disabledForegroundColor: scheme.primary,
-          textStyle: theme.textTheme.labelLarge?.copyWith(fontSize: 15, fontWeight: FontWeight.w700),
+          textStyle: theme.textTheme.labelLarge?.copyWith(fontSize: 14, fontWeight: kStrong, fontFeatures: kTabular),
         ),
         child: Text(
           s.phase == Phase.installing
@@ -191,8 +178,9 @@ class ActionButton extends StatelessWidget {
           button = OutlinedButton(
             onPressed: null,
             style: OutlinedButton.styleFrom(
-              disabledForegroundColor: scheme.onSurfaceVariant,
-              textStyle: theme.textTheme.labelLarge?.copyWith(fontSize: 15, fontWeight: FontWeight.w500),
+              disabledForegroundColor: x.muted,
+              side: BorderSide(color: x.hairline),
+              textStyle: theme.textTheme.labelLarge?.copyWith(fontSize: 14, fontWeight: FontWeight.w400),
             ),
             child: const Text('Up to date'),
           );
@@ -211,19 +199,19 @@ class AppIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final x = StoreColors.of(context);
     final fallback = Container(
       width: size,
       height: size,
-      color: scheme.primaryContainer,
+      color: x.raised,
       alignment: Alignment.center,
       child: Text(
         name.isEmpty ? '?' : name.characters.first.toUpperCase(),
-        style: TextStyle(fontSize: size * 0.45, fontWeight: FontWeight.w700, color: scheme.onPrimaryContainer),
+        style: TextStyle(fontSize: size * 0.4, fontWeight: kStrong, color: Theme.of(context).colorScheme.onSurfaceVariant),
       ),
     );
     return ClipRRect(
-      borderRadius: BorderRadius.circular(size * 0.24),
+      borderRadius: BorderRadius.circular(size * 0.25),
       child: url == null || !url!.startsWith('https://')
           ? fallback
           : Image.network(

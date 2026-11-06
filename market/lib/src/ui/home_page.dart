@@ -46,22 +46,20 @@ class _HomePageState extends State<HomePage> {
     return ListenableBuilder(
       listenable: c,
       builder: (context, _) => Scaffold(
-        body: PageBackground(
-          child: SafeArea(
-            child: LayoutBuilder(
-              builder: (context, box) {
-                final wide = box.maxWidth > 700;
-                final pad = wide ? 24.0 : 16.0;
-                return Column(
-                  children: [
-                    customWindowFrame || wide ? _desktopBar(context, box.maxWidth) : _narrowBar(context, pad),
-                    Expanded(
-                      child: RefreshIndicator(onRefresh: c.refresh, child: _body(context, box.maxWidth, pad, wide)),
-                    ),
-                  ],
-                );
-              },
-            ),
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, box) {
+              final wide = box.maxWidth > 700;
+              final pad = wide ? 24.0 : 16.0;
+              return Column(
+                children: [
+                  customWindowFrame || wide ? _desktopBar(context, box.maxWidth) : _narrowBar(context, pad),
+                  Expanded(
+                    child: RefreshIndicator(onRefresh: c.refresh, child: _body(context, box.maxWidth, pad, wide)),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -69,34 +67,30 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _refreshIcon() => c.loading
-      ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))
-      : const Icon(Icons.refresh);
+      ? const SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2))
+      : const Icon(Icons.refresh, size: 18);
 
-  /// Android: a floating pill with the title and two icon buttons.
+  /// Android: the title and two icon buttons on the page background.
   Widget _narrowBar(BuildContext context, double pad) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(pad, 8, pad, 4),
-      child: Container(
-        decoration: panelDecoration(context, radius: 40),
-        padding: const EdgeInsets.fromLTRB(24, 8, 8, 8),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                kStoreName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
+      padding: EdgeInsets.fromLTRB(pad + 4, 8, 8, 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              kStoreName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
-            IconButton(tooltip: 'Check for updates', onPressed: c.loading ? null : c.refresh, icon: _refreshIcon()),
-            IconButton(
-              tooltip: 'Settings',
-              onPressed: () => showSettingsSheet(context, c),
-              icon: const Icon(Icons.settings_outlined),
-            ),
-          ],
-        ),
+          ),
+          IconButton(tooltip: 'Check for updates', onPressed: c.loading ? null : c.refresh, icon: _refreshIcon()),
+          IconButton(
+            tooltip: 'Settings',
+            onPressed: () => showSettingsSheet(context, c),
+            icon: const Icon(Icons.settings_outlined),
+          ),
+        ],
       ),
     );
   }
@@ -110,14 +104,18 @@ class _HomePageState extends State<HomePage> {
     // Below this the labels no longer fit next to the caption buttons.
     final labels = width >= (frame ? 960 : 700);
     void settings() => showSettingsSheet(context, c);
+    const compact = ButtonStyle(
+      minimumSize: WidgetStatePropertyAll(Size(0, 36)),
+      padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 12)),
+    );
 
     final row = Row(
       children: [
         // Not clickable, so the window drags from them too.
         IgnorePointer(
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(9),
-            child: Image.asset('assets/logo.png', width: 36, height: 36, filterQuality: FilterQuality.medium),
+            borderRadius: BorderRadius.circular(8),
+            child: Image.asset('assets/logo.png', width: 32, height: 32, filterQuality: FilterQuality.medium),
           ),
         ),
         const SizedBox(width: 12),
@@ -133,6 +131,7 @@ class _HomePageState extends State<HomePage> {
         ),
         if (labels)
           OutlinedButton.icon(
+            style: compact,
             onPressed: c.loading ? null : c.refresh,
             icon: _refreshIcon(),
             label: const Text('Check for updates'),
@@ -140,18 +139,20 @@ class _HomePageState extends State<HomePage> {
         else
           IconButton(tooltip: 'Check for updates', onPressed: c.loading ? null : c.refresh, icon: _refreshIcon()),
         if (pending > 0) ...[
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           FilledButton.icon(
+            style: compact,
             onPressed: c.updateAll,
-            icon: const Icon(Icons.download),
-            label: Text(labels ? 'Update all ($pending)' : '$pending'),
+            icon: const Icon(Icons.download, size: 18),
+            label: Text(labels ? 'Update all ($pending)' : '$pending', style: const TextStyle(fontFeatures: kTabular)),
           ),
         ],
-        const SizedBox(width: 10),
+        const SizedBox(width: 8),
         if (labels)
           OutlinedButton.icon(
+            style: compact,
             onPressed: settings,
-            icon: const Icon(Icons.settings_outlined),
+            icon: const Icon(Icons.settings_outlined, size: 18),
             label: const Text('Settings'),
           )
         else
@@ -160,9 +161,9 @@ class _HomePageState extends State<HomePage> {
           IgnorePointer(
             child: Container(
               width: 1,
-              height: 28,
-              margin: const EdgeInsets.symmetric(horizontal: 14),
-              color: x.cardBorder,
+              height: 24,
+              margin: const EdgeInsets.symmetric(horizontal: 12),
+              color: x.hairline,
             ),
           ),
           const WindowButtons(),
@@ -170,13 +171,13 @@ class _HomePageState extends State<HomePage> {
       ],
     );
     final padded = Padding(
-      padding: EdgeInsets.fromLTRB(24, frame ? 10 : 12, frame ? 10 : 24, frame ? 10 : 12),
-      child: row,
+      padding: EdgeInsets.fromLTRB(24, 8, frame ? 8 : 24, 8),
+      child: SizedBox(height: 40, child: row),
     );
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: x.card.withValues(alpha: 0.7),
-        border: Border(bottom: BorderSide(color: x.cardBorder)),
+        color: x.page,
+        border: Border(bottom: BorderSide(color: x.hairline)),
       ),
       child: frame ? WindowDragArea(child: padded) : padded,
     );
@@ -200,9 +201,10 @@ class _HomePageState extends State<HomePage> {
           warning: !c.offline,
         ),
     ];
+    final top = wide ? 24.0 : 8.0;
 
     Widget message(Widget child) => ListView(
-      padding: EdgeInsets.fromLTRB(pad, 12, pad, 24),
+      padding: EdgeInsets.fromLTRB(pad, top, pad, 24),
       children: [
         for (final b in banners) Padding(padding: const EdgeInsets.only(bottom: 12), child: b),
         const SizedBox(height: 120),
@@ -210,11 +212,11 @@ class _HomePageState extends State<HomePage> {
       ],
     );
 
-    final textStyle = Theme.of(context).textTheme.bodyLarge;
+    final textStyle = Theme.of(context).textTheme.bodyLarge?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant);
     if (c.catalog == null) {
-      return message(c.loading ? const CircularProgressIndicator() : Text('No catalog yet.', style: textStyle));
+      return message(c.loading ? const CircularProgressIndicator() : Text('No catalog yet', style: textStyle));
     }
-    if (c.apps.isEmpty) return message(Text('No apps for this device yet.', style: textStyle));
+    if (c.apps.isEmpty) return message(Text('No apps for this device yet', style: textStyle));
 
     final columns = (width / 460).floor().clamp(1, 3);
     final pending = _pending;
@@ -244,19 +246,20 @@ class _HomePageState extends State<HomePage> {
       ),
     ];
 
+    // The first header sits right under the top bar, without the gap that
+    // separates it from a banner, the updates panel or another section.
+    final leading = banners.isEmpty && pending.isEmpty
+        ? sections.firstWhere((s) => s.$2.isNotEmpty).$1
+        : null;
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(pad, wide ? 20 : 12, pad, 24),
+      padding: EdgeInsets.fromLTRB(pad, top, pad, 32),
       children: [
         for (final b in banners) Padding(padding: const EdgeInsets.only(bottom: 12), child: b),
-        if (pending.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: _UpdatesHero(apps: pending, wide: wide, onUpdateAll: c.updateAll),
-          ),
+        if (pending.isNotEmpty) _UpdatesHero(apps: pending, wide: wide, onUpdateAll: c.updateAll),
         for (final (title, apps) in sections)
           if (apps.isNotEmpty) ...[
-            _SectionHeader(title: title, count: apps.length),
+            _SectionHeader(title: title, count: apps.length, first: title == leading),
             for (var i = 0; i < apps.length; i += columns)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
@@ -287,8 +290,9 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-/// "Updates ready — N apps can update", with the apps' icons and, on phones,
-/// the Update all button (on Windows it sits in the top bar).
+/// "Updates ready: N apps can update", with the apps' icons and their version
+/// steps, and on phones the Update all button (on Windows it sits in the top
+/// bar).
 class _UpdatesHero extends StatelessWidget {
   const _UpdatesHero({required this.apps, required this.wide, required this.onUpdateAll});
 
@@ -298,53 +302,76 @@ class _UpdatesHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final x = StoreColors.of(context);
-    final text = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final text = theme.textTheme;
+    final scheme = theme.colorScheme;
     final n = apps.length;
-    final icons = Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        for (final a in apps.take(wide ? 8 : 3)) AppIcon(url: a.app.icon, name: a.app.name, size: wide ? 40 : 38),
-      ],
-    );
+    final shown = apps.take(wide ? 4 : 3).toList();
+
     final heading = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          'Updates ready',
-          style: text.titleSmall?.copyWith(color: x.heroLabel, fontWeight: FontWeight.w600),
-        ),
+        Text('Updates ready', style: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant)),
         const SizedBox(height: 4),
-        Text(
-          n == 1 ? '1 app can update' : '$n apps can update',
-          style: (wide ? text.headlineSmall : text.headlineMedium)?.copyWith(
-            color: x.heroText,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.5,
+        Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(text: '$n', style: TextStyle(color: scheme.primary)),
+              TextSpan(text: n == 1 ? ' app can update' : ' apps can update'),
+            ],
           ),
+          style: text.headlineSmall?.copyWith(fontSize: wide ? 24 : 22, height: 32 / 24, fontFeatures: kTabular),
         ),
       ],
     );
 
+    // One row per app: icon, name and the version it moves to.
+    final list = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final (i, a) in shown.indexed) ...[
+          if (i > 0) const SizedBox(height: 8),
+          Row(
+            children: [
+              AppIcon(url: a.app.icon, name: a.app.name, size: 28),
+              const SizedBox(width: 12),
+              SizedBox(
+                width: wide ? 120 : null,
+                child: Text(a.app.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: text.bodyMedium),
+              ),
+              if (wide) ...[
+                const SizedBox(width: 16),
+                VersionStep(from: a.installed?.versionName ?? '', to: a.pkg.versionName),
+              ] else ...[
+                const SizedBox(width: 12),
+                Expanded(child: VersionStep(from: a.installed?.versionName ?? '', to: a.pkg.versionName)),
+              ],
+            ],
+          ),
+        ],
+        if (n > shown.length) ...[
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.only(left: 40),
+            child: Text('and ${n - shown.length} more', style: text.bodySmall),
+          ),
+        ],
+      ],
+    );
+
     return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: x.heroBorder),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [x.heroStart, x.heroEnd],
-        ),
-        boxShadow: [if (x.shadow.a > 0) BoxShadow(color: x.shadow, blurRadius: 20, offset: const Offset(0, 6))],
-      ),
-      padding: EdgeInsets.fromLTRB(wide ? 28 : 24, 22, wide ? 28 : 20, 22),
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: panelDecoration(context),
+      padding: const EdgeInsets.all(24),
       child: wide
           ? Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(child: heading),
-                icons,
+                const SizedBox(width: 24),
+                list,
               ],
             )
           : Column(
@@ -352,22 +379,16 @@ class _UpdatesHero extends StatelessWidget {
               children: [
                 heading,
                 const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(child: icons),
-                    const SizedBox(width: 12),
-                    FilledButton.icon(
-                      onPressed: onUpdateAll,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: x.heroButton,
-                        foregroundColor: x.heroButtonText,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                        textStyle: text.labelLarge?.copyWith(fontSize: 16, fontWeight: FontWeight.w700),
-                      ),
-                      icon: const Icon(Icons.download),
-                      label: Text('Update all ($n)'),
-                    ),
-                  ],
+                list,
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: onUpdateAll,
+                    style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
+                    icon: const Icon(Icons.download, size: 18),
+                    label: Text('Update all ($n)', style: const TextStyle(fontFeatures: kTabular)),
+                  ),
                 ),
               ],
             ),
@@ -376,35 +397,24 @@ class _UpdatesHero extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, required this.count});
+  const _SectionHeader({required this.title, required this.count, required this.first});
 
   final String title;
   final int count;
+  final bool first;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(6, 16, 0, 12),
+      padding: EdgeInsets.fromLTRB(4, first ? 0 : 24, 4, 12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
         children: [
-          Text(title, style: theme.textTheme.titleLarge?.copyWith(fontSize: 20)),
-          const SizedBox(width: 10),
-          Container(
-            constraints: const BoxConstraints(minWidth: 26),
-            height: 26,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(color: scheme.secondaryContainer, borderRadius: BorderRadius.circular(13)),
-            child: Text(
-              '$count',
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: scheme.onSecondaryContainer,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
+          Text(title, style: theme.textTheme.titleLarge),
+          const SizedBox(width: 8),
+          Text('$count', style: theme.textTheme.bodyMedium?.copyWith(color: StoreColors.of(context).muted, fontFeatures: kTabular)),
         ],
       ),
     );
@@ -429,28 +439,18 @@ class _Banner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final circle = warning ? scheme.errorContainer : scheme.secondaryContainer;
-    final fg = warning ? scheme.onErrorContainer : scheme.onSecondaryContainer;
     return Container(
       decoration: warning
-          ? panelDecoration(
-              context,
-              color: scheme.errorContainer.withValues(alpha: 0.35),
-              border: scheme.error.withValues(alpha: 0.35),
-            )
+          ? panelDecoration(context, color: scheme.errorContainer, border: scheme.error.withValues(alpha: 0.24))
           : panelDecoration(context),
-      padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+      constraints: const BoxConstraints(minHeight: 56),
       child: Row(
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(color: circle, shape: BoxShape.circle),
-            child: Icon(icon, color: fg, size: 22),
-          ),
-          const SizedBox(width: 14),
-          Expanded(child: Text(text, style: Theme.of(context).textTheme.bodyLarge)),
-          const SizedBox(width: 4),
+          Icon(icon, size: 18, color: warning ? scheme.error : scheme.onSurfaceVariant),
+          const SizedBox(width: 12),
+          Expanded(child: Text(text, style: Theme.of(context).textTheme.bodyMedium)),
+          const SizedBox(width: 8),
           TextButton(
             onPressed: onAction,
             style: warning ? TextButton.styleFrom(foregroundColor: scheme.error) : null,
