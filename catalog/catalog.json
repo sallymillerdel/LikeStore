@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-05T17:28:53Z",
+  "generatedAt": "2026-11-06T09:44:33Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -62,7 +62,7 @@
           "releasedAt": "2026-10-18T22:58:40Z"
         }
       },
-      "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.likestore.market.png?v=26a81da73cf0"
+      "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.likestore.market.png?v=b6c6f61612ec"
     },
     {
       "id": "com.luma.app",
