@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-06T13:41:25Z",
+  "generatedAt": "2026-11-06T13:56:49Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -156,25 +156,25 @@
         "android": {
           "package": "apk",
           "packageName": "com.zipper.app",
-          "versionCode": 2,
-          "versionName": "1.0.1",
+          "versionCode": 3,
+          "versionName": "1.0.2",
           "minSdk": 24,
           "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.zipper.app-android-1.0.1/com.zipper.app-android-1.0.1.apk",
-          "sha256": "9fc94898dd5431a10f58e29582433e3cf1d7e55181a62859047014f70231a7cd",
-          "sizeBytes": 152997253,
-          "changelog": "",
-          "releasedAt": "2026-11-05T17:28:53Z"
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.zipper.app-android-1.0.2/com.zipper.app-android-1.0.2.apk",
+          "sha256": "898c20b6913b7c26ed09318a662ec01c0dfd722c4f80c6d8f07957d92a6e31b4",
+          "sizeBytes": 152998645,
+          "changelog": "On Android, the back gesture now steps back through screens instead of closing the app. The scrollbar is thinner, dimmer and sits at the edge of the window.",
+          "releasedAt": "2026-11-06T13:56:49Z"
         },
         "windows": {
           "package": "zip",
           "entry": "zipper.exe",
-          "versionName": "1.0.1",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.zipper.app-windows-1.0.1/com.zipper.app-win-1.0.1.zip",
-          "sha256": "240f409c2443e575605607fe2ef0f83c4c6df7dc3e2a578279ca26a24dc9d66e",
-          "sizeBytes": 48330026,
-          "changelog": "",
-          "releasedAt": "2026-11-05T17:28:53Z"
+          "versionName": "1.0.2",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.zipper.app-windows-1.0.2/com.zipper.app-win-1.0.2.zip",
+          "sha256": "f04b54faf211503c29c3756a6f97deac4a39a3fc14fc5a0383103b2ce5602665",
+          "sizeBytes": 48331013,
+          "changelog": "On Android, the back gesture now steps back through screens instead of closing the app. The scrollbar is thinner, dimmer and sits at the edge of the window.",
+          "releasedAt": "2026-11-06T13:56:49Z"
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.zipper.app.png?v=f30fbeaa0a16"
