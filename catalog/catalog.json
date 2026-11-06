@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-06T14:00:33Z",
+  "generatedAt": "2026-11-06T14:00:34Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -72,26 +72,26 @@
         "android": {
           "package": "apk",
           "packageName": "app.luma.luma",
-          "versionCode": 20704,
-          "versionName": "2.7.4",
+          "versionCode": 20703,
+          "versionName": "2.7.3",
           "minSdk": 24,
           "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.luma.app-android-2.7.4/app.luma.luma-android-2.7.4.apk",
-          "sha256": "8bd5222de699e48b2d2ebed01c4bec85a46e3151bd2410a1eaf7e7e53fd0ff3d",
-          "sizeBytes": 67044895,
-          "changelog": "Android: the back gesture now steps back through tabs, the Weight/Eaten switch and open dialogs, and closes Luma only when there's nothing left to go back to. Windows: no changes, rebuilt as 2.7.3.",
-          "releasedAt": "2026-11-06T14:00:33Z"
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.luma.app-android-2.7.3/app.luma.luma-android-2.7.3.apk",
+          "sha256": "4b0275a8d4a8b2f4b99474e3995e47b419e20ea0cb4c6cb67c4a7d44b1ed1a5a",
+          "sizeBytes": 67044687,
+          "changelog": "Same app as 2.7.1, rebuilt",
+          "releasedAt": "2026-10-18T22:34:50Z"
         },
         "windows": {
           "package": "zip",
           "entry": "luma.exe",
-          "versionName": "2.7.3",
+          "versionName": "2.7.2",
           "sourceId": "app.luma.luma",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.luma.app-windows-2.7.3/com.luma.app-win-2.7.3.zip",
-          "sha256": "fc456748a5f730f40a591eb3629845b2054d41ba0bb3aaf4b593b17a89933543",
-          "sizeBytes": 44911235,
-          "changelog": "Android: the back gesture now steps back through tabs, the Weight/Eaten switch and open dialogs, and closes Luma only when there's nothing left to go back to. Windows: no changes, rebuilt as 2.7.3.",
-          "releasedAt": "2026-11-06T14:00:33Z"
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.luma.app-windows-2.7.2/com.luma.app-win-2.7.2.zip",
+          "sha256": "fb40237deb5fdc34e6cad04673754915b7974ee6929434add3557936845f79a2",
+          "sizeBytes": 44911070,
+          "changelog": "Same app as 2.7.1, rebuilt",
+          "releasedAt": "2026-10-18T22:34:50Z"
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.luma.app.png?v=c773785e76f4"
@@ -104,15 +104,15 @@
         "android": {
           "package": "apk",
           "packageName": "com.whylist.whylist",
-          "versionCode": 10202,
-          "versionName": "1.2.2",
+          "versionCode": 10203,
+          "versionName": "1.2.3",
           "minSdk": 26,
           "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.whylist.app-android-1.2.2/com.whylist.whylist-android-1.2.2.apk",
-          "sha256": "fa80d3f4929fc96459fd7b7098ce5032d2b592886b095330ff27f064f1cffe33",
-          "sizeBytes": 140928979,
-          "changelog": "Same app as 1.2.1, rebuilt",
-          "releasedAt": "2026-10-18T22:32:41Z"
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.whylist.app-android-1.2.3/com.whylist.whylist-android-1.2.3.apk",
+          "sha256": "472683b3bd79054f8c739adb8def472614144c66b35841205c49a7c0888ccca6",
+          "sizeBytes": 140938255,
+          "changelog": "Back while renaming a site now cancels the rename instead of closing Settings.",
+          "releasedAt": "2026-11-06T14:00:34Z"
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.whylist.app.png?v=43d4fb175c7a"
