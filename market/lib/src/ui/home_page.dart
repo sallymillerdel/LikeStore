@@ -46,7 +46,10 @@ class _HomePageState extends State<HomePage> {
     return ListenableBuilder(
       listenable: c,
       builder: (context, _) => Scaffold(
+        // The list runs behind the Android gesture bar; its bottom padding
+        // keeps the last card clear of it.
         body: SafeArea(
+          bottom: false,
           child: LayoutBuilder(
             builder: (context, box) {
               final wide = box.maxWidth > 700;
@@ -202,9 +205,10 @@ class _HomePageState extends State<HomePage> {
         ),
     ];
     final top = wide ? 24.0 : 8.0;
+    final inset = MediaQuery.paddingOf(context).bottom;
 
     Widget message(Widget child) => ListView(
-      padding: EdgeInsets.fromLTRB(pad, top, pad, 24),
+      padding: EdgeInsets.fromLTRB(pad, top, pad, 24 + inset),
       children: [
         for (final b in banners) Padding(padding: const EdgeInsets.only(bottom: 12), child: b),
         const SizedBox(height: 120),
@@ -253,7 +257,7 @@ class _HomePageState extends State<HomePage> {
         : null;
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(pad, top, pad, 32),
+      padding: EdgeInsets.fromLTRB(pad, top, pad, 32 + inset),
       children: [
         for (final b in banners) Padding(padding: const EdgeInsets.only(bottom: 12), child: b),
         if (pending.isNotEmpty) _UpdatesHero(apps: pending, wide: wide, onUpdateAll: c.updateAll),

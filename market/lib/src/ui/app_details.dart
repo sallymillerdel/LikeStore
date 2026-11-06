@@ -165,7 +165,7 @@ class _Details extends StatelessWidget {
       maxChildSize: 0.95,
       builder: (context, scroll) => ListView(
         controller: scroll,
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+        padding: EdgeInsets.fromLTRB(20, 0, 20, 24 + MediaQuery.paddingOf(context).bottom),
         children: [
           Row(
             children: [

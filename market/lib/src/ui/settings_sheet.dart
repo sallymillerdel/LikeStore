@@ -57,7 +57,10 @@ class _SettingsState extends State<_Settings> {
     final theme = Theme.of(context);
     final muted = theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant);
     return SingleChildScrollView(
-      padding: EdgeInsets.only(top: widget.dialog ? 20 : 0, bottom: 24),
+      padding: EdgeInsets.only(
+        top: widget.dialog ? 20 : 0,
+        bottom: 24 + (widget.dialog ? 0 : MediaQuery.paddingOf(context).bottom),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
