@@ -147,15 +147,14 @@ class ActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = status;
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     final x = StoreColors.of(context);
     Widget button;
     if (s.busy) {
       button = FilledButton.tonal(
         onPressed: null,
         style: FilledButton.styleFrom(
-          disabledBackgroundColor: x.raised,
-          disabledForegroundColor: scheme.primary,
+          disabledBackgroundColor: x.accentTint,
+          disabledForegroundColor: x.accent,
           textStyle: theme.textTheme.labelLarge?.copyWith(fontSize: 14, fontWeight: kStrong, fontFeatures: kTabular),
         ),
         child: Text(

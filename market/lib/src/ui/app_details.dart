@@ -51,7 +51,7 @@ class _Details extends StatelessWidget {
         value,
         style: strong
             ? theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.primary,
+                color: StoreColors.of(context).accent,
                 fontWeight: kStrong,
                 fontFeatures: kTabular,
               )
@@ -266,7 +266,7 @@ class _Details extends StatelessWidget {
               value,
               style: strong
                   ? theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.primary,
+                      color: StoreColors.of(context).accent,
                       fontWeight: kStrong,
                       fontFeatures: kTabular,
                     )

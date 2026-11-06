@@ -1,9 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+/// The red of the store icon (`assets/logo.png`). Filled buttons use it as is.
+const kBrand = Color(0xFFFF1B43);
+
 /// Neutral roles the Material scheme has no slot for. Surfaces, hairlines and
-/// text stay grey; the teal accent lives in the color scheme's `primary` and
-/// marks only the main action, the new version and the update count.
+/// text stay grey; the icon red lives in the color scheme's `primary` and marks
+/// the buttons, the new version and the update count.
 @immutable
 class StoreColors extends ThemeExtension<StoreColors> {
   const StoreColors({
@@ -13,6 +16,8 @@ class StoreColors extends ThemeExtension<StoreColors> {
     required this.hairline,
     required this.muted,
     required this.shadow,
+    required this.accent,
+    required this.accentTint,
   });
 
   /// The window background and the top bar.
@@ -33,6 +38,13 @@ class StoreColors extends ThemeExtension<StoreColors> {
   /// Light theme only; dark depth comes from surface steps.
   final Color shadow;
 
+  /// The icon red as text and outlines: a step darker on light surfaces and a
+  /// step lighter on dark ones, so small labels stay readable (4.5:1+).
+  final Color accent;
+
+  /// Background of tonal buttons: the icon red at ~10–16% over a card.
+  final Color accentTint;
+
   static const light = StoreColors(
     page: Color(0xFFFAFAFA),
     card: Color(0xFFFFFFFF),
@@ -40,6 +52,8 @@ class StoreColors extends ThemeExtension<StoreColors> {
     hairline: Color(0x14171717),
     muted: Color(0xFF737373),
     shadow: Color(0x0D000000),
+    accent: Color(0xFFCF0E37),
+    accentTint: Color(0xFFFFE8EC),
   );
 
   static const dark = StoreColors(
@@ -49,6 +63,8 @@ class StoreColors extends ThemeExtension<StoreColors> {
     hairline: Color(0x14EDEDED),
     muted: Color(0xFF85858B),
     shadow: Color(0x00000000),
+    accent: Color(0xFFFF4D6A),
+    accentTint: Color(0xFF3E1921),
   );
 
   static StoreColors of(BuildContext context) => Theme.of(context).extension<StoreColors>()!;
@@ -72,13 +88,14 @@ ThemeData buildTheme(Brightness b) {
   final x = dark ? StoreColors.dark : StoreColors.light;
   final text = dark ? const Color(0xFFEDEDED) : const Color(0xFF171717);
   final secondary = dark ? const Color(0xFFA1A1A6) : const Color(0xFF525252);
-  final scheme = ColorScheme.fromSeed(seedColor: const Color(0xFF0F766E), brightness: b).copyWith(
-    primary: dark ? const Color(0xFF6EDCC8) : const Color(0xFF12756B),
-    onPrimary: dark ? const Color(0xFF00362F) : Colors.white,
+  final scheme = ColorScheme.fromSeed(seedColor: kBrand, brightness: b).copyWith(
+    primary: kBrand,
+    onPrimary: Colors.white,
     primaryContainer: x.raised,
     onPrimaryContainer: secondary,
-    secondaryContainer: x.raised,
-    onSecondaryContainer: text,
+    // Tonal buttons (Open, Change, download progress).
+    secondaryContainer: x.accentTint,
+    onSecondaryContainer: x.accent,
     surface: x.card,
     surfaceTint: Colors.transparent,
     surfaceContainerLowest: x.card,
@@ -128,13 +145,28 @@ ThemeData buildTheme(Brightness b) {
         padding: pad,
         minimumSize: size,
         textStyle: label,
-        foregroundColor: WidgetStatePropertyAll(text),
-        side: WidgetStatePropertyAll(BorderSide(color: scheme.outline)),
+        foregroundColor: WidgetStateProperty.resolveWith(
+          (s) => s.contains(WidgetState.disabled) ? x.muted : x.accent,
+        ),
+        side: WidgetStateProperty.resolveWith(
+          (s) => BorderSide(
+            color: s.contains(WidgetState.disabled) ? x.hairline : x.accent.withValues(alpha: 0.45),
+          ),
+        ),
         animationDuration: quick,
       ),
     ),
     textButtonTheme: TextButtonThemeData(
-      style: ButtonStyle(shape: shape, padding: pad, minimumSize: size, textStyle: label, animationDuration: quick),
+      style: ButtonStyle(
+        shape: shape,
+        padding: pad,
+        minimumSize: size,
+        textStyle: label,
+        foregroundColor: WidgetStateProperty.resolveWith(
+          (s) => s.contains(WidgetState.disabled) ? x.muted : x.accent,
+        ),
+        animationDuration: quick,
+      ),
     ),
     iconButtonTheme: IconButtonThemeData(
       style: ButtonStyle(
@@ -216,7 +248,7 @@ class VersionStep extends StatelessWidget {
           TextSpan(text: '  →  ', style: TextStyle(color: x.muted)),
           TextSpan(
             text: to,
-            style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: kStrong),
+            style: TextStyle(color: x.accent, fontWeight: kStrong),
           ),
         ],
       ),

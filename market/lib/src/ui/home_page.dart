@@ -41,6 +41,14 @@ class _HomePageState extends State<HomePage> {
       if (a.hasUpdate && !a.busy) a,
   ];
 
+  /// The set of updates the user put off with Later. The panel comes back
+  /// when that set changes (a new version, another app) or on the next start.
+  String? _later;
+
+  static String _updateKey(List<AppStatus> apps) => [for (final a in apps) '${a.app.id}@${a.pkg.versionName}'].join(',');
+
+  bool _panelShown(List<AppStatus> pending) => pending.isNotEmpty && _updateKey(pending) != _later;
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -102,7 +110,9 @@ class _HomePageState extends State<HomePage> {
   /// custom window frame) the caption buttons. The whole bar drags the window.
   Widget _desktopBar(BuildContext context, double width) {
     final x = StoreColors.of(context);
-    final pending = _pending.length;
+    // The updates panel has its own Update all; the bar offers it only while
+    // the panel is put off with Later.
+    final pending = _panelShown(_pending) ? 0 : _pending.length;
     final frame = customWindowFrame;
     // Below this the labels no longer fit next to the caption buttons.
     final labels = width >= (frame ? 960 : 700);
@@ -224,6 +234,7 @@ class _HomePageState extends State<HomePage> {
 
     final columns = (width / 460).floor().clamp(1, 3);
     final pending = _pending;
+    final panel = _panelShown(pending);
     // The store's own card leads its section.
     final ordered = [...c.apps.where((a) => a.isStore), ...c.apps.where((a) => !a.isStore)];
     final sections = [
@@ -252,7 +263,7 @@ class _HomePageState extends State<HomePage> {
 
     // The first header sits right under the top bar, without the gap that
     // separates it from a banner, the updates panel or another section.
-    final leading = banners.isEmpty && pending.isEmpty
+    final leading = banners.isEmpty && !panel
         ? sections.firstWhere((s) => s.$2.isNotEmpty).$1
         : null;
     return ListView(
@@ -260,7 +271,14 @@ class _HomePageState extends State<HomePage> {
       padding: EdgeInsets.fromLTRB(pad, top, pad, 32 + inset),
       children: [
         for (final b in banners) Padding(padding: const EdgeInsets.only(bottom: 12), child: b),
-        if (pending.isNotEmpty) _UpdatesHero(apps: pending, wide: wide, onUpdateAll: c.updateAll),
+        if (panel)
+          _UpdatesPanel(
+            apps: pending,
+            wide: wide,
+            onUpdateAll: c.updateAll,
+            onLater: () => setState(() => _later = _updateKey(pending)),
+            onOpen: (a) => showAppDetails(context, c, a),
+          ),
         for (final (title, apps) in sections)
           if (apps.isNotEmpty) ...[
             _SectionHeader(title: title, count: apps.length, first: title == leading),
@@ -294,108 +312,258 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-/// "Updates ready: N apps can update", with the apps' icons and their version
-/// steps, and on phones the Update all button (on Windows it sits in the top
-/// bar).
-class _UpdatesHero extends StatelessWidget {
-  const _UpdatesHero({required this.apps, required this.wide, required this.onUpdateAll});
+/// "N updates available": the apps' icons stacked, their names, Later and
+/// Update all, and under "Show versions" each app's version step.
+class _UpdatesPanel extends StatefulWidget {
+  const _UpdatesPanel({
+    required this.apps,
+    required this.wide,
+    required this.onUpdateAll,
+    required this.onLater,
+    required this.onOpen,
+  });
 
   final List<AppStatus> apps;
   final bool wide;
   final VoidCallback onUpdateAll;
+  final VoidCallback onLater;
+  final ValueChanged<AppStatus> onOpen;
+
+  @override
+  State<_UpdatesPanel> createState() => _UpdatesPanelState();
+}
+
+class _UpdatesPanelState extends State<_UpdatesPanel> {
+  bool _open = false;
+
+  /// "Classly", "Classly and Luma", "Classly, Luma, XReel and Zipper",
+  /// "Classly, Luma, XReel and 3 more".
+  static String _names(List<AppStatus> apps) {
+    final names = [for (final a in apps) a.app.name];
+    if (names.length == 1) return names.single;
+    if (names.length <= 4) return '${names.sublist(0, names.length - 1).join(', ')} and ${names.last}';
+    return '${names.take(3).join(', ')} and ${names.length - 3} more';
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final text = theme.textTheme;
-    final scheme = theme.colorScheme;
+    final x = StoreColors.of(context);
+    final secondary = theme.colorScheme.onSurfaceVariant;
+    final apps = widget.apps;
+    final wide = widget.wide;
     final n = apps.length;
-    final shown = apps.take(wide ? 4 : 3).toList();
+    final pad = wide ? 24.0 : 20.0;
 
-    final heading = Column(
+    final title = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text('Updates ready', style: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant)),
-        const SizedBox(height: 4),
-        Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(text: '$n', style: TextStyle(color: scheme.primary)),
-              TextSpan(text: n == 1 ? ' app can update' : ' apps can update'),
-            ],
-          ),
-          style: text.headlineSmall?.copyWith(fontSize: wide ? 24 : 22, height: 32 / 24, fontFeatures: kTabular),
+        Text(
+          n == 1 ? '1 update available' : '$n updates available',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: text.titleLarge?.copyWith(fontFeatures: kTabular),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          _names(apps),
+          maxLines: wide ? 1 : 2,
+          overflow: TextOverflow.ellipsis,
+          style: text.bodyMedium?.copyWith(color: secondary),
         ),
       ],
     );
+    final later = OutlinedButton(onPressed: widget.onLater, child: const Text('Later'));
+    final updateAll = FilledButton(onPressed: widget.onUpdateAll, child: const Text('Update all'));
 
-    // One row per app: icon, name and the version it moves to.
-    final list = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (final (i, a) in shown.indexed) ...[
-          if (i > 0) const SizedBox(height: 8),
-          Row(
+    final summary = wide
+        ? Row(
             children: [
-              AppIcon(url: a.app.icon, name: a.app.name, size: 28),
-              const SizedBox(width: 12),
-              SizedBox(
-                width: wide ? 120 : null,
-                child: Text(a.app.name, maxLines: 1, overflow: TextOverflow.ellipsis, style: text.bodyMedium),
-              ),
-              if (wide) ...[
-                const SizedBox(width: 16),
-                VersionStep(from: a.installed?.versionName ?? '', to: a.pkg.versionName),
-              ] else ...[
-                const SizedBox(width: 12),
-                Expanded(child: VersionStep(from: a.installed?.versionName ?? '', to: a.pkg.versionName)),
-              ],
+              _IconStack(apps: apps),
+              const SizedBox(width: 16),
+              Expanded(child: title),
+              const SizedBox(width: 16),
+              later,
+              const SizedBox(width: 8),
+              updateAll,
             ],
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _IconStack(apps: apps),
+              const SizedBox(height: 12),
+              title,
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(child: SizedBox(height: 44, child: later)),
+                  const SizedBox(width: 8),
+                  Expanded(child: SizedBox(height: 44, child: updateAll)),
+                ],
+              ),
+            ],
+          );
+
+    final hairline = BorderSide(color: x.hairline);
+    final toggle = InkWell(
+      onTap: () => setState(() => _open = !_open),
+      child: Container(
+        decoration: BoxDecoration(border: Border(top: hairline)),
+        padding: EdgeInsets.symmetric(horizontal: pad, vertical: 12),
+        child: Row(
+          children: [
+            Text(_open ? 'Hide versions' : 'Show versions', style: text.bodyMedium?.copyWith(color: secondary)),
+            const SizedBox(width: 2),
+            AnimatedRotation(
+              turns: _open ? 0.5 : 0,
+              duration: const Duration(milliseconds: 150),
+              child: Icon(Icons.arrow_drop_down, size: 20, color: secondary),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    // Two apps per row on wide screens, split by hairlines like a table.
+    final columns = wide ? 2 : 1;
+    final versions = Column(
+      children: [
+        for (var i = 0; i < n; i += columns)
+          DecoratedBox(
+            decoration: BoxDecoration(border: Border(top: hairline)),
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (var j = i; j < i + columns; j++) ...[
+                    if (j > i) VerticalDivider(width: 1, color: x.hairline),
+                    Expanded(
+                      child: j < n
+                          ? _VersionRow(status: apps[j], pad: pad, onTap: () => widget.onOpen(apps[j]))
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ),
-        ],
-        if (n > shown.length) ...[
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.only(left: 40),
-            child: Text('and ${n - shown.length} more', style: text.bodySmall),
-          ),
-        ],
       ],
     );
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
+      clipBehavior: Clip.antiAlias,
       decoration: panelDecoration(context),
-      padding: const EdgeInsets.all(24),
-      child: wide
-          ? Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: heading),
-                const SizedBox(width: 24),
-                list,
-              ],
-            )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                heading,
-                const SizedBox(height: 20),
-                list,
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: onUpdateAll,
-                    style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
-                    icon: const Icon(Icons.download, size: 18),
-                    label: Text('Update all ($n)', style: const TextStyle(fontFeatures: kTabular)),
+      child: Material(
+        type: MaterialType.transparency,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(padding: EdgeInsets.all(pad), child: summary),
+            toggle,
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              alignment: Alignment.topCenter,
+              child: _open ? versions : const SizedBox(width: double.infinity),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Up to four app icons overlapping left to right, each ringed in the card
+/// color, then "+N" for the rest.
+class _IconStack extends StatelessWidget {
+  const _IconStack({required this.apps});
+
+  final List<AppStatus> apps;
+
+  static const _size = 36.0;
+  static const _ring = 2.0;
+  static const _step = 26.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final x = StoreColors.of(context);
+    final shown = apps.take(apps.length > 4 ? 3 : 4).toList();
+    final more = apps.length - shown.length;
+    final count = shown.length + (more > 0 ? 1 : 0);
+    const outer = _size + _ring * 2;
+
+    Widget ring(Widget child) => Container(
+      padding: const EdgeInsets.all(_ring),
+      decoration: BoxDecoration(color: x.card, borderRadius: BorderRadius.circular(_size * 0.25 + _ring)),
+      child: child,
+    );
+
+    return SizedBox(
+      width: outer + _step * (count - 1),
+      height: outer,
+      child: Stack(
+        children: [
+          for (final (i, a) in shown.indexed)
+            Positioned(left: _step * i, child: ring(AppIcon(url: a.app.icon, name: a.app.name, size: _size))),
+          if (more > 0)
+            Positioned(
+              left: _step * shown.length,
+              child: ring(
+                Container(
+                  width: _size,
+                  height: _size,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(color: x.raised, borderRadius: BorderRadius.circular(_size * 0.25)),
+                  child: Text(
+                    '+$more',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: kStrong, fontFeatures: kTabular),
                   ),
                 ),
-              ],
+              ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One app in the expanded list: icon, name and `2.4.2 → 2.4.3`. Opens the
+/// app's page.
+class _VersionRow extends StatelessWidget {
+  const _VersionRow({required this.status, required this.pad, required this.onTap});
+
+  final AppStatus status;
+  final double pad;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final a = status;
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: pad, vertical: 14),
+        child: Row(
+          children: [
+            AppIcon(url: a.app.icon, name: a.app.name, size: 24),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                a.app.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+            const SizedBox(width: 12),
+            VersionStep(from: a.installed?.versionName ?? '', to: a.pkg.versionName),
+          ],
+        ),
+      ),
     );
   }
 }
