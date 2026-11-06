@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-06T14:25:20Z",
+  "generatedAt": "2026-11-06T14:40:58Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -41,25 +41,25 @@
         "windows": {
           "package": "zip",
           "entry": "LikeStore.exe",
-          "versionName": "1.1.0",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-windows-1.1.0/com.likestore.market-win-1.1.0.zip",
-          "sha256": "780dcd1e0f9c8e121164575ef60d905ccd3b212fc127cad5ec9e8cfb0897b1c2",
-          "sizeBytes": 12258594,
-          "changelog": "New red L logo and a calmer look: neutral colors, simpler cards, buttons and dialogs. The updates panel now lists each app with its version change. On Android the navigation bar is transparent instead of a black strip.",
-          "releasedAt": "2026-11-06T13:41:25Z"
+          "versionName": "1.1.1",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-windows-1.1.1/com.likestore.market-win-1.1.1.zip",
+          "sha256": "303187f98f56e31b4047892348ab1946eed03d56124d5b0d1aab4c52e09fea73",
+          "sizeBytes": 12267615,
+          "changelog": "New look in the LikeStore red: all buttons now match the logo. Redesigned updates panel with stacked app icons, a Later button and an expandable list of versions.",
+          "releasedAt": "2026-11-06T14:40:58Z"
         },
         "android": {
           "package": "apk",
           "packageName": "com.likestore.market",
-          "versionCode": 10100,
-          "versionName": "1.1.0",
+          "versionCode": 10101,
+          "versionName": "1.1.1",
           "minSdk": 24,
           "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-android-1.1.0/com.likestore.market-android-1.1.0.apk",
-          "sha256": "b658388b8becfd7a9c3ab4be2c1d6716d0e29750ec26fa00a3c8a1aafce78869",
-          "sizeBytes": 31779155,
-          "changelog": "New red L logo and a calmer look: neutral colors, simpler cards, buttons and dialogs. The updates panel now lists each app with its version change. On Android the navigation bar is transparent instead of a black strip.",
-          "releasedAt": "2026-11-06T13:41:25Z"
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.likestore.market-android-1.1.1/com.likestore.market-android-1.1.1.apk",
+          "sha256": "0b9494d337c29f8776f446c0087f49195cd41bb0998f4ca765db070e806b4199",
+          "sizeBytes": 31795567,
+          "changelog": "New look in the LikeStore red: all buttons now match the logo. Redesigned updates panel with stacked app icons, a Later button and an expandable list of versions.",
+          "releasedAt": "2026-11-06T14:40:58Z"
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.likestore.market.png?v=b6c6f61612ec"
