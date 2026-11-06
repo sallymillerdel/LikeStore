@@ -71,8 +71,6 @@ flutter:
   assets:
     - assets/logo.png
 
-  shaders:
-    - shaders/page_gradient.frag
 
   # To add assets to your application, add an assets section, like this:
   # assets:

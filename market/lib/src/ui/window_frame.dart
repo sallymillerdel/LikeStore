@@ -91,7 +91,7 @@ class _WindowButtonsState extends State<WindowButtons> with WindowListener {
         _CaptionButton(
           tooltip: _maximized ? 'Restore' : 'Maximize',
           icon: _maximized ? Icons.filter_none : Icons.crop_square,
-          iconSize: _maximized ? 15 : 18,
+          iconSize: _maximized ? 14 : 16,
           onPressed: () => _maximized ? windowManager.unmaximize() : windowManager.maximize(),
         ),
         _CaptionButton(tooltip: 'Close', icon: Icons.close, close: true, onPressed: windowManager.close),
@@ -105,7 +105,7 @@ class _CaptionButton extends StatefulWidget {
     required this.tooltip,
     required this.icon,
     required this.onPressed,
-    this.iconSize = 18,
+    this.iconSize = 16,
     this.close = false,
   });
 
@@ -140,10 +140,10 @@ class _CaptionButtonState extends State<_CaptionButton> {
         child: GestureDetector(
           onTap: widget.onPressed,
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 120),
+            duration: const Duration(milliseconds: 150),
             width: 46,
             height: 40,
-            decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(8)),
             child: Icon(widget.icon, size: widget.iconSize, color: fg),
           ),
         ),

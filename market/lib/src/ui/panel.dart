@@ -11,10 +11,6 @@ Future<void> showPanelDialog(BuildContext context, {required WidgetBuilder build
     context: context,
     builder: (context) => Dialog(
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
-        side: BorderSide(color: StoreColors.of(context).cardBorder),
-      ),
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxWidth),
         child: Builder(builder: builder),
@@ -33,7 +29,7 @@ class PanelTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(24, 0, dialog ? 12 : 24, dialog ? 8 : 16),
+      padding: EdgeInsets.fromLTRB(24, 0, dialog ? 16 : 24, 16),
       child: Row(
         children: [
           Expanded(child: child),
@@ -45,7 +41,7 @@ class PanelTitle extends StatelessWidget {
   }
 }
 
-/// A rounded panel of list tiles.
+/// A bordered group of list tiles.
 class PanelGroup extends StatelessWidget {
   const PanelGroup({super.key, required this.children});
 
@@ -55,10 +51,10 @@ class PanelGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     if (children.isEmpty) return const SizedBox.shrink();
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: panelDecoration(context, radius: 20),
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      decoration: panelDecoration(context, radius: 12),
       clipBehavior: Clip.antiAlias,
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Material(
         type: MaterialType.transparency,
         child: Column(children: children),
@@ -66,4 +62,3 @@ class PanelGroup extends StatelessWidget {
     );
   }
 }
-

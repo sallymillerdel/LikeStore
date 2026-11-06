@@ -57,7 +57,7 @@ class _SettingsState extends State<_Settings> {
     final theme = Theme.of(context);
     final muted = theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant);
     return SingleChildScrollView(
-      padding: EdgeInsets.only(top: widget.dialog ? 12 : 0, bottom: widget.dialog ? 20 : 24),
+      padding: EdgeInsets.only(top: widget.dialog ? 20 : 0, bottom: 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,16 +82,19 @@ class _SettingsState extends State<_Settings> {
           PanelGroup(children: [
             ListTile(
               title: const Text('About'),
-              subtitle: Text(kStoreAbout, style: muted?.copyWith(height: 1.4)),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(kStoreAbout, style: muted?.copyWith(height: 20 / 14)),
+              ),
             ),
             ListTile(
               title: const Text('Store version'),
-              trailing: Text(_version, style: muted),
+              trailing: Text(_version),
             ),
             ListTile(
               title: const Text('Catalog'),
               subtitle: Text(kCatalogBaseUrl, maxLines: 1, overflow: TextOverflow.ellipsis),
-              trailing: Text(formatDate(c.catalog?.generatedAt), style: muted),
+              trailing: Text(formatDate(c.catalog?.generatedAt)),
             ),
           ]),
         ],
@@ -108,11 +111,10 @@ class _SettingsState extends State<_Settings> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SelectableText(_win.appsDir),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           Text(
             _folderError ?? 'New installs and updates go here. Installed apps move on their next update.',
-            style: TextStyle(
-              fontSize: 12,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: _folderError != null ? Theme.of(context).colorScheme.error : null,
             ),
           ),
@@ -122,7 +124,7 @@ class _SettingsState extends State<_Settings> {
         mainAxisSize: MainAxisSize.min,
         children: [
           TextButton(onPressed: _win.openAppsDir, child: const Text('Open')),
-          const SizedBox(width: 4),
+          const SizedBox(width: 8),
           FilledButton.tonal(onPressed: _changeFolder, child: const Text('Change')),
         ],
       ),
