@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-16T00:13:48Z",
+  "generatedAt": "2026-11-22T04:03:59Z",
   "apps": [
     {
       "id": "com.classly.app",
@@ -125,25 +125,25 @@
         "windows": {
           "package": "zip",
           "entry": "XReel.exe",
-          "versionName": "1.9.3",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.xreel.app-windows-1.9.3/com.xreel.app-win-1.9.3.zip",
-          "sha256": "8d934de645d8ff5e8e0e4196025301589f58ea1292e7a55c13edddc86fdc53c5",
-          "sizeBytes": 228709954,
-          "changelog": "Same version as the Android 1.9.3 release; no changes to the Windows app.",
-          "releasedAt": "2026-11-06T14:25:20Z"
+          "versionName": "1.9.4",
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.xreel.app-windows-1.9.4/com.xreel.app-win-1.9.4.zip",
+          "sha256": "7b0b7af85451c005efa7803c9413c8396728edcb36a50b7552496ff97ebb526c",
+          "sizeBytes": 228714703,
+          "changelog": "Gemini requests now time out instead of hanging, and Cancel stops an analysis mid-request. A Gemini timeout, 504 or per-minute limit switches to another model, starting with the older one. Adds the Gemini 4 Hydrogen model. Windows: model and cookies dropdowns in Settings can be picked again.",
+          "releasedAt": "2026-11-22T04:03:59Z"
         },
         "android": {
           "package": "apk",
           "packageName": "com.xreel.app",
-          "versionCode": 6,
-          "versionName": "1.9.3",
+          "versionCode": 7,
+          "versionName": "1.9.4",
           "minSdk": 24,
           "signingCertSha256": "aa3fbfd4b0a207894ae0e4b965e8469154694be3ed52e55abb2664f52d2473ad",
-          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.xreel.app-android-1.9.3/com.xreel.app-android-1.9.3.apk",
-          "sha256": "45f2a0e82e654f24a4cf4fad0562c8fa83e3f56fa01b6f29c028e2c93b797363",
-          "sizeBytes": 71084598,
-          "changelog": "Back gesture now steps back through the app (topic, Settings, analysis) instead of closing it; the bottom bar reaches the screen edge.",
-          "releasedAt": "2026-11-06T14:04:58Z"
+          "url": "https://github.com/sallymillerdel/LikeStore/releases/download/com.xreel.app-android-1.9.4/com.xreel.app-android-1.9.4.apk",
+          "sha256": "d65e4ef235ea4b8f256a6977cfc5f5a4285dba08fc2d176bc32e6e932afd0a5f",
+          "sizeBytes": 71525963,
+          "changelog": "Gemini requests now time out instead of hanging, and Cancel stops an analysis mid-request. A Gemini timeout, 504 or per-minute limit switches to another model, starting with the older one. Adds the Gemini 4 Hydrogen model. Windows: model and cookies dropdowns in Settings can be picked again.",
+          "releasedAt": "2026-11-22T04:03:59Z"
         }
       },
       "icon": "https://sallymillerdel.github.io/LikeStore/icons/com.xreel.app.png?v=e232f422ee5c"
